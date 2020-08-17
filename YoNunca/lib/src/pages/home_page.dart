@@ -7,6 +7,7 @@ import 'package:YoNunca/src/models/user_data.dart';
 import 'package:YoNunca/src/pages/add_frase_page.dart';
 import 'package:YoNunca/src/pages/friends/friends_page.dart';
 import 'package:YoNunca/src/pages/game/pending_frases.dart';
+import 'package:YoNunca/src/pages/test_page.dart';
 import 'package:YoNunca/src/pages/user/perfil_page.dart';
 import 'package:YoNunca/src/pages/user/user_chat_list_page.dart';
 import 'package:YoNunca/src/pages/user/users_list_page.dart';
@@ -173,6 +174,14 @@ class _HomePageState extends State<HomePage> {
                               tileColor: Theme.of(context).primaryColorDark,
                               title: Text("Frases Pendientes"),
                               onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => PendingFrasesPage())),
+                            )
+                          : Container(),
+                      user.userData.level == ApplicationLevel.kAdmin
+                          ? ListTile(
+                              leading: Icon(Icons.view_list),
+                              tileColor: Theme.of(context).primaryColorDark,
+                              title: Text("Frases Pendientes"),
+                              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => TestPage())),
                             )
                           : Container()
                     ],
