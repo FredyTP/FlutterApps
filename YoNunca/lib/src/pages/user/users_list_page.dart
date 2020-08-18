@@ -1,6 +1,5 @@
 import 'package:YoNunca/src/app_state.dart';
 import 'package:YoNunca/src/models/user_data.dart';
-import 'package:YoNunca/src/pages/user/edit_user.dart';
 import 'package:YoNunca/src/pages/user/perfil_page.dart';
 import 'package:flutter/material.dart';
 

@@ -1,18 +1,13 @@
 import 'package:YoNunca/src/app_state.dart';
-import 'package:YoNunca/src/bloc/frase_bloc.dart';
 import 'package:YoNunca/src/models/app_user.dart';
-import 'package:YoNunca/src/models/chat_msg.dart';
-import 'package:YoNunca/src/models/frase_model.dart';
 import 'package:YoNunca/src/models/user_data.dart';
 import 'package:YoNunca/src/pages/add_frase_page.dart';
 import 'package:YoNunca/src/pages/friends/friends_page.dart';
 import 'package:YoNunca/src/pages/game/pending_frases.dart';
-import 'package:YoNunca/src/pages/test_page.dart';
 import 'package:YoNunca/src/pages/user/perfil_page.dart';
 import 'package:YoNunca/src/pages/user/user_chat_list_page.dart';
 import 'package:YoNunca/src/pages/user/users_list_page.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -176,14 +171,6 @@ class _HomePageState extends State<HomePage> {
                               onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => PendingFrasesPage())),
                             )
                           : Container(),
-                      user.userData.level == ApplicationLevel.kAdmin
-                          ? ListTile(
-                              leading: Icon(Icons.view_list),
-                              tileColor: Theme.of(context).primaryColorDark,
-                              title: Text("Frases Pendientes"),
-                              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => TestPage())),
-                            )
-                          : Container()
                     ],
                   ),
                 ),

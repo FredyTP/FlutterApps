@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "465600476719",
+    "firebase_url": "https://gymstats-b01ae.firebaseio.com",
+    "project_id": "gymstats-b01ae",
+    "storage_bucket": "gymstats-b01ae.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:465600476719:android:453a0cfc5ffbb3bbcd78da",
+        "android_client_info": {
+          "package_name": "com.FredyTP7.GymStats"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "465600476719-cnt48enbgcpo077q1ckjtcr9s3k4aq0f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAO6JrNQxSuF6H9ZgvnUa7-k775tehKG6g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "465600476719-cnt48enbgcpo077q1ckjtcr9s3k4aq0f.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

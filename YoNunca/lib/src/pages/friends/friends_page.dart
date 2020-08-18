@@ -1,8 +1,6 @@
 import 'package:YoNunca/src/app_state.dart';
-import 'package:YoNunca/src/bloc/bloc_provider.dart';
-import 'package:YoNunca/src/models/user_data.dart';
 import 'package:YoNunca/src/pages/friends/add_friend_page.dart';
-import 'package:YoNunca/src/pages/friends/chat_page.dart';
+
 import 'package:YoNunca/src/pages/friends/friend_requests_page.dart';
 import 'package:YoNunca/src/pages/user/perfil_page.dart';
 import 'package:flutter/material.dart';
