@@ -11,4 +11,8 @@ class ExerciseBloc {
   Future addExersice(ExerciseModel exercise) async {
     return await _collection.add(exercise.toJson());
   }
+
+  Future<ExerciseModel> getExercise(String id) async {
+    return ExerciseModel.fromFirebase(await _collection.document(id).get());
+  }
 }

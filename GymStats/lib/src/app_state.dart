@@ -25,8 +25,16 @@ class AppState extends State<AppStateContainer> {
   bool firstTime = true;
   @override
   void initState() {
-    widget.blocProvider.init();
     super.initState();
+
+    widget.blocProvider.init();
+  }
+
+  @override
+  void dispose() {
+    widget.blocProvider.dispose();
+
+    super.dispose();
   }
 
   @override

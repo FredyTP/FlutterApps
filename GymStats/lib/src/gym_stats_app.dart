@@ -1,3 +1,4 @@
+import 'package:GymStats/src/login_stream_wrapper.dart';
 import 'package:GymStats/src/pages/exercises_page.dart';
 import 'package:flutter/material.dart';
 
@@ -8,12 +9,8 @@ class GymStatsApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Gym Stats',
-      initialRoute: "exercises",
+      home: LoginStreamWrapper(),
       debugShowCheckedModeBanner: false,
-      routes: {
-        "home": (BuildContext context) => HomePage(),
-        "exercises": (BuildContext context) => ExercisesPage(),
-      },
     );
   }
 }

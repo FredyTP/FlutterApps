@@ -1,31 +1,37 @@
-import 'package:GymStats/src/app_state.dart';
 import 'package:GymStats/src/model/exercise_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-class ExercisesPage extends StatelessWidget {
-  const ExercisesPage({Key key}) : super(key: key);
+import '../app_state.dart';
 
-  static const route = "ExercisesPage";
+class WorkoutExercisesPage extends StatefulWidget {
+  final String workoutID;
+  WorkoutExercisesPage({Key key, this.workoutID}) : super(key: key);
 
+  @override
+  _WorkoutExercisesPageState createState() => _WorkoutExercisesPageState();
+}
+
+class _WorkoutExercisesPageState extends State<WorkoutExercisesPage> {
   @override
   Widget build(BuildContext context) {
     final bloc = AppStateContainer.of(context).blocProvider;
     return Scaffold(
-      appBar: AppBar(title: Text("Ejercicios")),
+      appBar: AppBar(title: Text("Workout Exercises")),
       body: Container(
         child: StreamBuilder(
-          stream: bloc.exerciseBloc.getExercisesStream(),
-          builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          stream: bloc.workoutBloc.getWorkoutExercises(id: widget.workoutID),
+          builder: (context, AsyncSnapshot<List<ExerciseModel>> snapshot) {
             if (snapshot.hasData) {
               final exerciseList = snapshot.data;
+
               return GridView.builder(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
-                itemCount: exerciseList.documents.length,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3),
+                itemCount: exerciseList.length,
                 itemBuilder: (context, index) {
-                  final exercise = ExerciseModel.fromJson(exerciseList.documents[index].data);
+                  final exercise = exerciseList[index];
                   print("id:");
-                  print(exerciseList.documents[index].documentID);
+
                   return buildExerciseCard(exercise);
                 },
               );
