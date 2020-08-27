@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 class AppUser {
   final UserData userData;
-  final FirebaseUser firebaseUser;
+  final User firebaseUser;
 
   AppUser({@required this.firebaseUser, @required this.userData});
 }

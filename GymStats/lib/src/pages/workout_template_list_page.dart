@@ -70,9 +70,9 @@ class _WorkoutListState extends State<WorkoutListPage> {
               final workoutList = snapshot.data;
               return GridView.builder(
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
-                itemCount: workoutList.documents.length,
+                itemCount: workoutList.docs.length,
                 itemBuilder: (context, index) {
-                  final workout = WorkoutModel.fromFirebase(workoutList.documents[index]);
+                  final workout = WorkoutModel.fromFirebase(workoutList.docs[index]);
 
                   return buildWorkoutCard(context, workout);
                 },

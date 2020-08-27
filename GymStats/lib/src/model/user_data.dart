@@ -21,12 +21,12 @@ class UserData {
         this.id = null;
 
   UserData.fromFirebase(DocumentSnapshot doc)
-      : this.userName = doc.data["userName"],
-        this.email = doc.data["email"],
-        this.level = ApplicationLevel.values[doc.data["level"]],
-        this.authUID = doc.data["authUID"],
-        this.password = utf8.decode(base64Url.decode(doc.data["password"])),
-        this.id = doc.documentID;
+      : this.userName = doc.data()["userName"],
+        this.email = doc.data()["email"],
+        this.level = ApplicationLevel.values[doc.data()["level"]],
+        this.authUID = doc.data()["authUID"],
+        this.password = utf8.decode(base64Url.decode(doc.data()["password"])),
+        this.id = doc.id;
 
   Map<String, dynamic> toJson() {
     return {

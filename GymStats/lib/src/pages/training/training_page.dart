@@ -1,10 +1,7 @@
 import 'package:GymStats/src/app_state.dart';
-import 'package:GymStats/src/bloc/bloc_provider.dart';
 import 'package:GymStats/src/bloc/gym/training_bloc.dart';
-import 'package:GymStats/src/model/serie_model.dart';
 import 'package:GymStats/src/pages/training/series_list_page.dart';
 
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 
 import 'add_serie_page.dart';

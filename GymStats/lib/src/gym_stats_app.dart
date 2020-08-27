@@ -1,8 +1,5 @@
 import 'package:GymStats/src/login_stream_wrapper.dart';
-import 'package:GymStats/src/pages/exercises_page.dart';
 import 'package:flutter/material.dart';
-
-import 'pages/home_page.dart';
 
 class GymStatsApp extends StatelessWidget {
   @override
@@ -11,6 +8,7 @@ class GymStatsApp extends StatelessWidget {
       title: 'Gym Stats',
       home: LoginStreamWrapper(),
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(primaryColor: Colors.black, brightness: Brightness.dark),
     );
   }
 }

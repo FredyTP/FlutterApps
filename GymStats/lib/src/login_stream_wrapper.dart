@@ -1,13 +1,16 @@
-import 'package:GymStats/src/pages/exercises_page.dart';
+import 'package:GymStats/src/pages/exercises/exercises_page.dart';
 import 'package:GymStats/src/pages/home_page.dart';
+import 'package:GymStats/src/pages/stats/graphics_page.dart';
+import 'package:GymStats/src/pages/stats/training_stats_page.dart';
 import 'package:GymStats/src/pages/training/training_page.dart';
-import 'package:GymStats/src/pages/trainings_list_page.dart';
+import 'package:GymStats/src/pages/stats/trainings_list_page.dart';
 import 'package:GymStats/src/pages/workout_template_list_page.dart';
 import 'package:flutter/material.dart';
 
 import 'app_state.dart';
 import 'model/app_user_event.dart';
 import 'pages/create_workout_page.dart';
+import 'pages/stats/profile_page.dart';
 import 'signin_page.dart';
 
 class LoginStreamWrapper extends StatefulWidget {
@@ -25,6 +28,9 @@ class _LoginStreamWrapperState extends State<LoginStreamWrapper> {
     WorkoutListPage.route: (BuildContext context) => WorkoutListPage(),
     TrainingPage.route: (BuildContext context) => TrainingPage(),
     TrainingsListPage.route: (BuildContext context) => TrainingsListPage(),
+    ProfilePage.route: (BuildContext context) => ProfilePage(),
+    TrainingStatsPage.route: (BuildContext context) => TrainingStatsPage(),
+    GraphicsPage.route: (BuildContext context) => GraphicsPage(),
   };
 
   final _navigatorKey = GlobalKey<NavigatorState>();
@@ -45,20 +51,23 @@ class _LoginStreamWrapperState extends State<LoginStreamWrapper> {
           if (snapshot.data.event == UserEventType.kDisconnected) {
             return SignInPage();
           } else {
-            return WillPopScope(
-              onWillPop: () async {
-                return !await _navigatorKey.currentState.maybePop();
-              },
-              child: Navigator(
-                key: _navigatorKey,
-                initialRoute: HomePage.route,
-                onGenerateRoute: (settings) {
-                  if (routes.containsKey(settings.name)) {
-                    return MaterialPageRoute(builder: routes[settings.name]);
-                  } else {
-                    return MaterialPageRoute(builder: routes[HomePage.route]);
-                  }
+            return Theme(
+              data: ThemeData(brightness: Brightness.light),
+              child: WillPopScope(
+                onWillPop: () async {
+                  return !await _navigatorKey.currentState.maybePop();
                 },
+                child: Navigator(
+                  key: _navigatorKey,
+                  initialRoute: HomePage.route,
+                  onGenerateRoute: (settings) {
+                    if (routes.containsKey(settings.name)) {
+                      return MaterialPageRoute(builder: routes[settings.name]);
+                    } else {
+                      return MaterialPageRoute(builder: routes[HomePage.route]);
+                    }
+                  },
+                ),
               ),
             );
           }

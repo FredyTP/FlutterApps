@@ -1,6 +1,8 @@
 import 'package:GymStats/src/app_state.dart';
 import 'package:GymStats/src/bloc/gym/training_bloc.dart';
 import 'package:GymStats/src/model/serie_model.dart';
+import 'package:GymStats/src/widgets/logic/async_raised_button.dart';
+import 'package:GymStats/src/widgets/logic/exercise_image.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 
@@ -47,13 +49,14 @@ class _AddSeriePageState extends State<AddSeriePage> {
                         Expanded(
                           flex: 2,
                           child: Center(
-                            child: RaisedButton(
+                            child: AsyncRaisedButton(
                               color: Colors.blue,
                               textColor: Colors.white,
+                              disabledColor: Colors.grey,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                               //this is kinda useless, could be just .addSerie()
                               //Add some feedback when added
-                              onPressed: () => bloc.trainingBloc.addSerie(SerieModel(
+                              onPressed: () async => await bloc.trainingBloc.addSerie(SerieModel(
                                 exerciseID: trainingEvent.currentExercise.id,
                                 reps: bloc.trainingBloc.exerciseReps,
                                 weight: bloc.trainingBloc.exerciseWeight,
@@ -92,22 +95,24 @@ class _AddSeriePageState extends State<AddSeriePage> {
                 flex: 1,
                 child: Container(
                   child: Center(
-                      child: RaisedButton(
-                    color: Colors.red,
-                    textColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                    onPressed: () async {
-                      await bloc.trainingBloc.endTraining();
-                      Navigator.of(context).pop();
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        "Finalizar Entrenamiento",
-                        style: TextStyle(fontSize: 18),
+                    child: AsyncRaisedButton(
+                      disabledColor: Colors.grey,
+                      color: Colors.red,
+                      textColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                      onPressed: () async {
+                        await bloc.trainingBloc.endTraining();
+                        Navigator.of(context).pop();
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          "Finalizar Entrenamiento",
+                          style: TextStyle(fontSize: 18),
+                        ),
                       ),
                     ),
-                  )),
+                  ),
                 ),
               )
             ],
@@ -329,13 +334,8 @@ class _AddSeriePageState extends State<AddSeriePage> {
             flex: 1,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: Image.network(
-                trainingEvent.currentExercise.imageURL,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.red,
-                  );
-                },
+              child: ExerciseImage(
+                imgPath: trainingEvent.currentExercise.imagePath,
               ),
             ),
           )

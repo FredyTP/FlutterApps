@@ -12,10 +12,10 @@ class TrainingModel {
   TrainingModel({this.endTime, this.id, this.series = const <SerieModel>[], this.startTime});
 
   TrainingModel.fromFirebase(DocumentSnapshot doc)
-      : this.startTime = doc.data["startTime"] != null ? DateTime.fromMillisecondsSinceEpoch(doc.data["startTime"]) : null,
-        this.endTime = doc.data["endTime"] != null ? DateTime.fromMillisecondsSinceEpoch(doc.data["endTime"]) : null,
-        this.id = doc.documentID,
-        this.series = doc.data["series"].map((e) => SerieModel.fromJson(e)).toList().cast<SerieModel>();
+      : this.startTime = doc.data()["startTime"] != null ? DateTime.fromMillisecondsSinceEpoch(doc.data()["startTime"]) : null,
+        this.endTime = doc.data()["endTime"] != null ? DateTime.fromMillisecondsSinceEpoch(doc.data()["endTime"]) : null,
+        this.id = doc.id,
+        this.series = doc.data()["series"].map((e) => SerieModel.fromJson(e)).toList().cast<SerieModel>();
 
   Map<String, dynamic> toJson() {
     return {

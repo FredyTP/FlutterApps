@@ -8,6 +8,15 @@ import 'bloc/user/app_user_bloc.dart';
 //And also add more input form to create a user like username etc...
 
 class SignInPage extends StatefulWidget {
+  static const msgError = {
+    "email-already-in-use": "El email ya existe",
+    "invalid-email": "El email no es valido",
+    "operation-not-allowed": "Operacion no permitida",
+    "weak-password": "La contraseña no es segura",
+    "user-disabled": "El usuario está deshabilitado",
+    "user-not-found": "El email no existe",
+    "wrong-password": "Contraseña incorrecta",
+  };
   SignInPage();
 
   @override
@@ -28,6 +37,8 @@ class _SignInPageState extends State<SignInPage> {
       _isCreateForm = !_isCreateForm;
     });
   }
+
+  String errorMsg = "";
 
   final TextEditingController _textEditingController = TextEditingController();
 
@@ -123,23 +134,42 @@ class _SignInPageState extends State<SignInPage> {
                 _crearEmail(),
                 SizedBox(height: 30.0),
                 _crearPassword(),
-                SizedBox(height: 30.0),
+                SizedBox(height: 10.0),
+                Text(
+                  errorMsg,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.red,
+                  ),
+                ),
+                SizedBox(height: 20.0),
                 RaisedButton(
                   child: Text(_isCreateForm ? "Crear" : "Iniciar Sesión"),
                   padding: EdgeInsets.symmetric(horizontal: 60, vertical: 10),
                   color: Color.fromRGBO(90, 70, 178, 1.0),
                   textColor: Colors.white,
+                  disabledColor: Colors.grey,
                   onPressed: blockButton
                       ? null
                       : () async {
+                          setState(() {
+                            blockButton = true;
+                          });
                           _firstTimeEmail = false;
                           _firstTimePass = false;
                           if (_formKey.currentState.validate()) {
                             _formKey.currentState.save();
-                            _submitForm(bloc);
+                            await _submitForm(bloc);
+                          }
+                          try {
+                            setState(() {
+                              blockButton = false;
+                            });
+                          } catch (e) {
+                            print("Already out");
                           }
                         },
-                )
+                ),
 
                 //_crearBoton(context,bloc),
               ],
@@ -163,6 +193,10 @@ class _SignInPageState extends State<SignInPage> {
             icon: Icon(Icons.alternate_email, color: Colors.deepPurple),
             hintText: "ejemplo@correo.com",
             labelText: "Correo electrónico",
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: Colors.white),
+            ),
             //counterText: snapshot.data,
           ),
           onChanged: (value) => _firstTimeEmail = value.length == 0,
@@ -186,12 +220,19 @@ class _SignInPageState extends State<SignInPage> {
     return Container(
         padding: EdgeInsets.symmetric(horizontal: 20.0),
         child: TextFormField(
+          style: TextStyle(color: Colors.white),
+          cursorColor: Colors.white,
           keyboardType: TextInputType.text,
           obscureText: true,
           autovalidate: true,
           decoration: InputDecoration(
+            fillColor: Color.fromRGBO(60, 60, 60, 1),
             icon: Icon(Icons.lock_outline, color: Colors.deepPurple),
             labelText: "Contraseña",
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: Colors.white),
+            ),
           ),
           onChanged: (value) => _firstTimePass = value.length == 0,
           validator: (value) {
@@ -209,20 +250,25 @@ class _SignInPageState extends State<SignInPage> {
         ));
   }
 
-  void _resetEmail() {
-    email = "";
-    _firstTimeEmail = false;
-    _textEditingController.clear();
-  }
-
   Future _createUser(AppUserBloc bloc) async {
     final result = await bloc.createUserEmailPassword(email: email, password: password);
-    //if (result == null) _showSnackbar();
+    if (result != null) {
+      setState(() {
+        errorMsg = SignInPage.msgError[result.code];
+      });
+      _showSnackbar(errorMsg);
+    }
   }
 
   Future _loginUser(AppUserBloc bloc) async {
     final result = await bloc.logInEmailAndPassword(email: email, password: password);
-    //if (result == null) _showSnackbar();
+    if (result != null) {
+      //print(SignInPage.msgError[result.code]);
+      setState(() {
+        errorMsg = SignInPage.msgError[result.code];
+      });
+      _showSnackbar(errorMsg);
+    }
   }
 
   Future _submitForm(AppUserBloc bloc) async {
@@ -232,16 +278,16 @@ class _SignInPageState extends State<SignInPage> {
       await _loginUser(bloc);
   }
 
-  SnackBar _createSnackbar() {
+  SnackBar _createSnackbar(String msg) {
     return SnackBar(
       content: Text(
-        "Error: El Email ya existe",
+        msg,
         textAlign: TextAlign.center,
       ),
     );
   }
 
-  void _showSnackbar() {
-    _scaffoldKey.currentState.showSnackBar(_createSnackbar());
+  void _showSnackbar(String msg) {
+    _scaffoldKey.currentState.showSnackBar(_createSnackbar(msg));
   }
 }

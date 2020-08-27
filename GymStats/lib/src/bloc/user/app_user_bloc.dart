@@ -8,7 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 class AppUserBloc {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final CollectionReference _userCollection = Firestore.instance.collection("users");
+  final CollectionReference _userCollection = FirebaseFirestore.instance.collection("users");
   final StreamController<AppUserEvent> _streamController = StreamController<AppUserEvent>.broadcast();
   AppUser _currentUser;
 
@@ -26,7 +26,7 @@ class AppUserBloc {
   //informacion del usuario actual
   void init() {
     print("init AppUserBloc");
-    _auth.onAuthStateChanged.listen((event) {
+    _auth.authStateChanges().listen((User event) {
       print("-----Auth State Changed-----");
       print(event.toString());
       if (_isDeleting) {
@@ -44,18 +44,18 @@ class AppUserBloc {
               _streamController.add(AppUserEvent(event: UserEventType.kDisconnected));
               _currentUser = null;
             } else {
-              final len = result.documents.length;
+              final len = result.docs.length;
               if (len == 0) {
-                print("-----Cant find user in DATA BASE-----");
+                print("-----Cant find user in DATA BASE len: 0-----");
                 _streamController.add(AppUserEvent(event: UserEventType.kDisconnected));
                 _currentUser = null;
               } else if (len > 1) {
-                print("-----Cloned user in DATA BASE-----");
+                print("-----Cloned user in DATA BASE len: $len -----");
                 _streamController.add(AppUserEvent(event: UserEventType.kDisconnected));
                 _currentUser = null;
               } else if (len == 1) {
-                print("-----USER OKEY: LOGGIN IN-----");
-                _currentUser = AppUser(firebaseUser: event, userData: UserData.fromFirebase(result.documents[0]));
+                print("-----USER EY: LOGGIN IN-----");
+                _currentUser = AppUser(firebaseUser: event, userData: UserData.fromFirebase(result.docs[0]));
                 _streamController.add(AppUserEvent(event: UserEventType.kConnected, user: _currentUser));
               }
             }
@@ -66,7 +66,7 @@ class AppUserBloc {
   }
 
   Future<UserData> getUserDataFromID(String id) async {
-    final user = await _userCollection.document(id).get();
+    final user = await _userCollection.doc(id).get();
     if (user == null) {
       print("Error getUserDataFromID cant find the user");
       return null;
@@ -76,7 +76,7 @@ class AppUserBloc {
   }
 
   DocumentReference getUserDocumentFromID(String id) {
-    final user = _userCollection.document(id);
+    final user = _userCollection.doc(id);
     if (user == null) {
       print("Error getUserDocumentFromId cant find the user");
       return null;
@@ -86,49 +86,50 @@ class AppUserBloc {
   }
 
   Future<DocumentSnapshot> getUserDocumentFromUID(String uid) async {
-    final userList = await _userCollection.where("uid", isEqualTo: uid).getDocuments();
-    if (userList.documents.length == 0) {
+    final userList = await _userCollection.where("uid", isEqualTo: uid).get();
+    if (userList.docs.length == 0) {
       print("Error getUserDataFromUID cant find the user");
       return null;
     } else {
-      return userList.documents[0];
+      return userList.docs[0];
     }
   }
 
-  Future<DocumentReference> createUserEmailPassword({String email, String password, ApplicationLevel level = ApplicationLevel.kUser}) async {
-    AuthResult result;
-    //TODO : improve this funcion to have a feedback about errors;
+  Future<FirebaseAuthException> createUserEmailPassword({String email, String password, ApplicationLevel level = ApplicationLevel.kUser}) async {
+    UserCredential result;
+
     try {
       result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
     } catch (error) {
-      print(error.toString());
-      return null;
+      return error as FirebaseAuthException;
     }
     try {
-      print("OK");
+      print("Creating user");
 
       final tosend = UserData(email: email, password: password, authUID: result.user.uid, level: level, userName: "None");
-      return await _userCollection.add(tosend.toJson());
+      await _userCollection.add(tosend.toJson());
+      print("User Add sucesful");
     } catch (error) {
-      await result?.user?.delete();
       print(error.toString());
-      return null;
+      print("ERror adding user");
+      await result?.user?.delete();
     }
+    return null;
   }
 
   Future deleteUserWithUID(String uid) async {
     DocumentSnapshot documentSnapshot = await getUserDocumentFromUID(uid);
-    UserData userData = UserData.fromJson(documentSnapshot.data);
+    UserData userData = UserData.fromJson(documentSnapshot.data());
     if (documentSnapshot == null) {
       print("Can't delete the user");
     } else {
       print("begin deletion");
       _isDeleting = true;
       final UserData actualUser = _currentUser.userData;
-      AuthCredential credential = EmailAuthProvider.getCredential(email: userData.email, password: userData.password);
+      AuthCredential credential = EmailAuthProvider.credential(email: userData.email, password: userData.password);
       await FirebaseAuth.instance.signInWithCredential(credential);
       print("Signed in");
-      final currentuser = await FirebaseAuth.instance.currentUser();
+      final currentuser = FirebaseAuth.instance.currentUser;
       print("Deleted from database");
       await documentSnapshot.reference.delete();
       print("Deleted user");
@@ -139,12 +140,13 @@ class AppUserBloc {
     }
   }
 
-  Future logInEmailAndPassword({String email, String password}) async {
+  Future<FirebaseAuthException> logInEmailAndPassword({String email, String password}) async {
     try {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
     } catch (error) {
-      print(error.toString());
+      return error as FirebaseAuthException;
     }
+    return null;
   }
 
   Future signOut() async {

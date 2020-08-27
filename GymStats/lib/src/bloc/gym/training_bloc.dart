@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:GymStats/src/bloc/user/app_user_bloc.dart';
 import 'package:GymStats/src/bloc/gym/exercise_bloc.dart';
 import 'package:GymStats/src/model/exercise_model.dart';
+import 'package:GymStats/src/model/data/profile_data.dart';
 import 'package:GymStats/src/model/serie_model.dart';
 import 'package:GymStats/src/model/training_model.dart';
 import 'package:GymStats/src/model/workout_model.dart';
@@ -119,7 +120,7 @@ class TrainingBloc {
 
     //Crea una nueva sesión de entrenamiento(TrainingModel)
     final userID = _userBloc.currentUser.userData.id;
-    final result = await Firestore.instance.collection("users").document(userID).collection("trainings").add(TrainingModel(startTime: DateTime.now()).toJson());
+    final result = await FirebaseFirestore.instance.collection("users").doc(userID).collection("trainings").add(TrainingModel(startTime: DateTime.now()).toJson());
 
     if (result == null) {
       print("Error creating new training");
@@ -141,7 +142,7 @@ class TrainingBloc {
       return null;
     }
     final userID = _userBloc.currentUser.userData.id;
-    return Firestore.instance.collection("users").document(userID).collection("trainings").document(id);
+    return FirebaseFirestore.instance.collection("users").doc(userID).collection("trainings").doc(id);
   }
 
   DocumentReference getActiveTrainingReference() {
@@ -167,7 +168,7 @@ class TrainingBloc {
     }
     print("EnoughTime");
     final training = getActiveTrainingReference();
-    await training.updateData({
+    await training.update({
       "series": FieldValue.arrayUnion([serie.toJson()])
     });
     _activeTraining = TrainingModel.fromFirebase(await getActiveTrainingReference().get());
@@ -177,7 +178,7 @@ class TrainingBloc {
 
   Future deleteSerie(SerieModel serieModel) async {
     final training = getActiveTrainingReference();
-    await training.updateData({
+    await training.update({
       "series": FieldValue.arrayRemove([serieModel.toJson()])
     });
 
@@ -217,7 +218,7 @@ class TrainingBloc {
       if (_activeTraining.series.length == 0) {
         await getActiveTrainingReference().delete();
       } else {
-        await getActiveTrainingReference().updateData({"endTime": DateTime.now().millisecondsSinceEpoch});
+        await getActiveTrainingReference().update({"endTime": DateTime.now().millisecondsSinceEpoch});
       }
       //Clean all data
       _activeExercise = null;
@@ -236,6 +237,61 @@ class TrainingBloc {
         .collection("trainings") //,
         .snapshots()
         .asBroadcastStream()
-        .map((event) => event.documents.map((e) => TrainingModel.fromFirebase(e)).where((element) => element.endTime != null).toList());
+        .map((event) => event.docs.map((e) => TrainingModel.fromFirebase(e)).where((element) => element.endTime != null).toList());
+  }
+
+  Stream<ProfileData> getProfileDataStream(String userID) {
+    return getTrainingsList(userID)
+        .map((event) => ProfileData(
+              totalTrainings: _getTotalSesions(event),
+              totalReps: _getTotalReps(event),
+              totalWeight: _getTotalWeight(event),
+            ))
+        .asBroadcastStream();
+  }
+
+  int _getTotalSesions(List<TrainingModel> trainings) {
+    return trainings.length;
+  }
+
+  num _getTotalWeight(List<TrainingModel> trainings) {
+    num peso = 0;
+    trainings.forEach((element) {
+      element.series.forEach((serie) {
+        peso += serie.weight;
+      });
+    });
+
+    return peso;
+  }
+
+  int _getTotalReps(List<TrainingModel> trainings) {
+    int reps = 0;
+    trainings.forEach((element) {
+      element.series.forEach((serie) {
+        reps += serie.reps;
+      });
+    });
+    return reps;
+  }
+
+  Future<List<SerieModel>> getSeriesOfExercise(String exerciseID, {DateTime minTime}) async {
+    final userID = _userBloc.currentUser.userData.id;
+    final trainingCollection = _userBloc.getUserDocumentFromID(userID).collection("trainings");
+    QuerySnapshot docs;
+    if (minTime != null) {
+      docs = await trainingCollection.where("minTime", isGreaterThan: minTime).get();
+    } else {
+      docs = await trainingCollection.get();
+    }
+    final series = <SerieModel>[];
+    final list = docs.docs.map((e) => TrainingModel.fromFirebase(e)).toList();
+    list.forEach((element) {
+      element.series.forEach((element2) {
+        if (element2.exerciseID == exerciseID) series.add(element2);
+      });
+    });
+    return series;
+    //.map((event) => event.documents.map((e) => TrainingModel.fromFirebase(e)).where((element) => element.endTime != null).toList());
   }
 }

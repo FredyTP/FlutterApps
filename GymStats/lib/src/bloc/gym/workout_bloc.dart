@@ -22,14 +22,23 @@ class WorkoutBloc {
     return appUserBloc
         .getUserDocumentFromID(userid)
         .collection("workouts")
-        .document(id) //,
+        .doc(id) //,
         .snapshots()
         .asBroadcastStream()
         .asyncMap((event) async {
       final workout = WorkoutModel.fromFirebase(event);
       final list = List<ExerciseModel>();
-      for (final id in workout.exerciseIDList) {
-        list.add(await exerciseBloc.getExercise(id));
+      for (final eid in workout.exerciseIDList) {
+        final exercise = await exerciseBloc.getExercise(eid);
+        if (exercise == null) {
+          //Delete exercise if it doesnt exist ^.^
+          await appUserBloc.getUserDocumentFromID(userid).collection("workouts").doc(id).update({
+            "exerciseIDList": FieldValue.arrayRemove([eid])
+          });
+        } else {
+          //Otherwise add to exercise list to return :D
+          list.add(exercise);
+        }
       }
       return list;
     });

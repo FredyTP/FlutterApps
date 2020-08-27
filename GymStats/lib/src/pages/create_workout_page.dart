@@ -2,6 +2,7 @@ import 'package:GymStats/src/app_state.dart';
 import 'package:GymStats/src/bloc/bloc_provider.dart';
 import 'package:GymStats/src/model/exercise_model.dart';
 import 'package:GymStats/src/model/workout_model.dart';
+import 'package:GymStats/src/widgets/logic/exercise_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -135,9 +136,9 @@ class _CreateWorkoutPageState extends State<CreateWorkoutPage> {
           final exerciseList = snapshot.data;
           return GridView.builder(
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 15, mainAxisSpacing: 15),
-            itemCount: exerciseList.documents.length,
+            itemCount: exerciseList.docs.length,
             itemBuilder: (context, index) {
-              final exercise = ExerciseModel.fromFirebase(exerciseList.documents[index]);
+              final exercise = ExerciseModel.fromFirebase(exerciseList.docs[index]);
 
               return buildDraggableItem(exercise);
             },
@@ -179,8 +180,8 @@ class _CreateWorkoutPageState extends State<CreateWorkoutPage> {
       elevation: 7,
       color: Color.fromRGBO(250, 190, 120, 1),
       child: GridTile(
-        child: Image.network(
-          exercise.imageURL,
+        child: ExerciseImage(
+          imgPath: exercise.imagePath,
           fit: BoxFit.fitWidth,
           loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent loadingProgress) {
             if (loadingProgress == null) return child;

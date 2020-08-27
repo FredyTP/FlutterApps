@@ -1,4 +1,3 @@
-import 'package:GymStats/src/model/exercise_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class WorkoutModel {
@@ -8,9 +7,9 @@ class WorkoutModel {
   WorkoutModel({this.exerciseIDList, this.name, this.id});
 
   WorkoutModel.fromFirebase(DocumentSnapshot doc)
-      : this.exerciseIDList = doc.data["exerciseIDList"]?.cast<String>(),
-        this.name = doc.data["name"],
-        this.id = doc.documentID;
+      : this.exerciseIDList = doc.data()["exerciseIDList"]?.cast<String>(),
+        this.name = doc.data()["name"],
+        this.id = doc.id;
 
   Map<String, dynamic> toJson() {
     return {

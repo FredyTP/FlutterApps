@@ -1,5 +1,5 @@
 import 'package:GymStats/src/model/exercise_model.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:GymStats/src/widgets/logic/exercise_image.dart';
 import 'package:flutter/material.dart';
 
 import '../app_state.dart';
@@ -50,17 +50,8 @@ class _WorkoutExercisesPageState extends State<WorkoutExercisesPage> {
       elevation: 7,
       color: Color.fromRGBO(250, 190, 120, 1),
       child: GridTile(
-        child: Image.network(
-          exercise.imageURL,
-          fit: BoxFit.fitWidth,
-          loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent loadingProgress) {
-            if (loadingProgress == null) return child;
-            return Center(
-              child: CircularProgressIndicator(
-                value: loadingProgress.expectedTotalBytes != null ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes : null,
-              ),
-            );
-          },
+        child: ExerciseImage(
+          imgPath: exercise.imagePath,
         ),
         footer: Container(width: double.infinity, color: Colors.amber, alignment: Alignment.center, padding: EdgeInsets.all(12), child: Text(exercise.name)),
       ),
