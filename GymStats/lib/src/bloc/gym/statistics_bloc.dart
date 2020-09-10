@@ -12,7 +12,7 @@ class StatisticsBloc {
 
   Future<List<SerieModel>> getSeriesOfExercise(String exerciseID, {DateTime minTime}) async {
     final userID = _userBloc.currentUser.userData.id;
-    final trainingCollection = _userBloc.getUserDocumentFromID(userID).collection("trainings");
+    final trainingCollection = _userBloc.getUserDocumentFromID(userID).collection("trainings").where("endTime", isGreaterThan: 0);
     QuerySnapshot docs;
     if (minTime != null) {
       docs = await trainingCollection.where("startTime", isGreaterThan: minTime.millisecondsSinceEpoch).get();

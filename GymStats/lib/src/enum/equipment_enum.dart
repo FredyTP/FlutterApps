@@ -3,4 +3,5 @@ enum Equipment {
   Barra,
   Banco,
   Gomas,
+  Ninguno,
 }

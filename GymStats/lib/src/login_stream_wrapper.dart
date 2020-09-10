@@ -36,12 +36,12 @@ class _LoginStreamWrapperState extends State<LoginStreamWrapper> {
   final _navigatorKey = GlobalKey<NavigatorState>();
   @override
   Widget build(BuildContext context) {
-    final bloc = AppStateContainer.of(context).blocProvider.appUserBloc;
+    final bloc = AppStateContainer.of(context).blocProvider;
     print("From Login Wrapper: ");
-    print(bloc.currentUser?.userData?.userName);
+    print(bloc.appUserBloc.currentUser?.userData?.userName);
 
     return StreamBuilder(
-      stream: bloc.userEventStream,
+      stream: bloc.appUserBloc.userEventStream,
       builder: (BuildContext context, AsyncSnapshot<AppUserEvent> snapshot) {
         //todo: fix this, should wait not show siginpage if already logged
         if (!snapshot.hasData) {
@@ -51,25 +51,35 @@ class _LoginStreamWrapperState extends State<LoginStreamWrapper> {
           if (snapshot.data.event == UserEventType.kDisconnected) {
             return SignInPage();
           } else {
-            return Theme(
-              data: ThemeData(brightness: Brightness.light),
-              child: WillPopScope(
-                onWillPop: () async {
-                  return !await _navigatorKey.currentState.maybePop();
-                },
-                child: Navigator(
-                  key: _navigatorKey,
-                  initialRoute: HomePage.route,
-                  onGenerateRoute: (settings) {
-                    if (routes.containsKey(settings.name)) {
-                      return MaterialPageRoute(builder: routes[settings.name]);
-                    } else {
-                      return MaterialPageRoute(builder: routes[HomePage.route]);
-                    }
-                  },
-                ),
-              ),
-            );
+            return FutureBuilder(
+                future: bloc.trainingBloc.checkForOpenSesions(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return Theme(
+                      data: ThemeData(brightness: Brightness.light),
+                      child: WillPopScope(
+                        onWillPop: () async {
+                          return !await _navigatorKey.currentState.maybePop();
+                        },
+                        child: Navigator(
+                          key: _navigatorKey,
+                          initialRoute: HomePage.route,
+                          onGenerateRoute: (settings) {
+                            if (routes.containsKey(settings.name)) {
+                              return MaterialPageRoute(builder: routes[settings.name]);
+                            } else {
+                              return MaterialPageRoute(builder: routes[HomePage.route]);
+                            }
+                          },
+                        ),
+                      ),
+                    );
+                  } else {
+                    return Container(
+                      color: Colors.black,
+                    );
+                  }
+                });
           }
         }
       },

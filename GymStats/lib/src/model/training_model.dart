@@ -9,19 +9,23 @@ class TrainingModel {
 
   final List<SerieModel> series;
 
-  TrainingModel({this.endTime, this.id, this.series = const <SerieModel>[], this.startTime});
+  final String workoutID;
+
+  TrainingModel({this.workoutID, this.endTime, this.id, this.series = const <SerieModel>[], this.startTime});
 
   TrainingModel.fromFirebase(DocumentSnapshot doc)
       : this.startTime = doc.data()["startTime"] != null ? DateTime.fromMillisecondsSinceEpoch(doc.data()["startTime"]) : null,
         this.endTime = doc.data()["endTime"] != null ? DateTime.fromMillisecondsSinceEpoch(doc.data()["endTime"]) : null,
         this.id = doc.id,
-        this.series = doc.data()["series"].map((e) => SerieModel.fromJson(e)).toList().cast<SerieModel>();
+        this.series = doc.data()["series"].map((e) => SerieModel.fromJson(e)).toList().cast<SerieModel>(),
+        this.workoutID = doc.data()["workoutID"];
 
   Map<String, dynamic> toJson() {
     return {
       "startTime": this.startTime?.millisecondsSinceEpoch,
       "endTime": this.endTime?.millisecondsSinceEpoch,
       "series": this.series.map((e) => e.toJson()).toList(),
+      "workoutID": this.workoutID,
     };
   }
 }

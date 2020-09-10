@@ -23,12 +23,6 @@ class AppStateContainer extends StatefulWidget {
 class AppState extends State<AppStateContainer> {
   BlocProvider get blocProvider => widget.blocProvider;
   bool firstTime = true;
-  @override
-  void initState() {
-    super.initState();
-
-    widget.blocProvider.init();
-  }
 
   @override
   void dispose() {

@@ -11,6 +11,8 @@ class ExerciseModel {
   final List<Muscles> secondaryMuscles;
   final List<Equipment> equipment;
 
+  //final int difficultyLevel;
+
   ExerciseModel({this.imagePath, this.description, this.name, this.primaryMuscles, this.secondaryMuscles, this.equipment, this.id});
 
   ExerciseModel.fromJson(Map<String, dynamic> json)

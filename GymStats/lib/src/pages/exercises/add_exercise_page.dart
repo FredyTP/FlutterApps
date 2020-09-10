@@ -5,6 +5,7 @@ import 'package:GymStats/src/enum/equipment_enum.dart';
 import 'package:GymStats/src/enum/muscle_enum.dart';
 import 'package:GymStats/src/model/exercise_model.dart';
 import 'package:GymStats/src/widgets/logic/async_raised_button.dart';
+import 'package:GymStats/src/widgets/logic/enum_chip_selector.dart';
 import 'package:GymStats/src/widgets/logic/exercise_image.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
@@ -117,29 +118,24 @@ class _AddExercisePageState extends State<AddExercisePage> {
                 ],
               ),
             ),
-            buidSelectItemsFromEnum(
-              "Musculos Primarios",
-              expandedList,
-              0,
-              primaryMuscles,
-              Muscles.values,
-              (item) => secondaryMuscles.contains(item as Muscles) || primaryMuscles.contains((item as Muscles)),
+            EnumChipSelector<Muscles>(
+              title: "Musculos Primarios",
+              enumeration: Muscles.values,
+              initialData: primaryMuscles,
+              onChange: (List<Muscles> list) => setState(() => primaryMuscles = list),
+              isSelected: (muscle) => (primaryMuscles.contains(muscle) || secondaryMuscles.contains(muscle)),
             ),
-            buidSelectItemsFromEnum(
-              "Musculos Secundarios",
-              expandedList,
-              1,
-              secondaryMuscles,
-              Muscles.values,
-              (item) => secondaryMuscles.contains(item as Muscles) || primaryMuscles.contains((item as Muscles)),
+            EnumChipSelector<Muscles>(
+              title: "Musculos Secundarios",
+              initialData: secondaryMuscles,
+              enumeration: Muscles.values,
+              onChange: (List<Muscles> list) => setState(() => secondaryMuscles = list),
+              isSelected: (muscle) => (primaryMuscles.contains(muscle) || secondaryMuscles.contains(muscle)),
             ),
-            buidSelectItemsFromEnum(
-              "Equipamiento",
-              expandedList,
-              2,
-              equipment,
-              Equipment.values,
-              (item) => equipment.contains(item as Equipment),
+            EnumChipSelector<Equipment>(
+              title: "Equipamiento",
+              enumeration: Equipment.values,
+              onChange: (List<Equipment> list) => equipment = list,
             ),
             Center(
               child: AsyncRaisedButton(
@@ -270,77 +266,6 @@ class _AddExercisePageState extends State<AddExercisePage> {
         width: MediaQuery.of(context).size.width * 0.9,
         height: MediaQuery.of(context).size.width * 0.9 * 3 / 5,
         child: image,
-      ),
-    );
-  }
-
-  Widget buidSelectItemsFromEnum(String title, List<bool> expanded, int index, List<dynamic> lista, List<dynamic> enumeration, bool Function(dynamic) isSelected) {
-    return Container(
-      padding: EdgeInsets.all(7),
-      child: Column(
-        children: [
-          Container(
-              padding: EdgeInsets.all(10),
-              child: Text(
-                title,
-                style: TextStyle(fontSize: 20),
-              )),
-          ExpansionPanelList(
-            expandedHeaderPadding: EdgeInsets.all(0),
-            expansionCallback: (panelIndex, isExpanded) {
-              setState(() {
-                expanded[index] = !isExpanded;
-              });
-            },
-            children: [
-              ExpansionPanel(
-                isExpanded: expanded[index],
-                headerBuilder: (context, isExpanded) {
-                  return Container(
-                    padding: EdgeInsets.all(7),
-                    alignment: Alignment.center,
-                    child: Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
-                      children: lista
-                              ?.map((e) => Chip(
-                                    deleteIcon: Transform.rotate(angle: 45 * 3.1415 / 180, child: Icon(Icons.add_circle)),
-                                    onDeleted: () {
-                                      setState(() {
-                                        lista.remove(e);
-                                      });
-                                    },
-                                    label: Text(e.toString().split('.').last),
-                                  ))
-                              ?.toList() ??
-                          [Container()],
-                    ),
-                  );
-                },
-                body: Container(
-                  alignment: Alignment.center,
-                  padding: EdgeInsets.all(7),
-                  child: Wrap(
-                    alignment: WrapAlignment.center,
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: [Divider()]..addAll(enumeration.map((e) => GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              if (isSelected(e) == false) lista.add(e);
-                            });
-                          },
-                          child: Chip(
-                            backgroundColor: (isSelected(e) == false) ? Color.fromRGBO(50, 230, 100, 1) : null,
-                            label: Text(e.toString().split('.').last),
-                          ),
-                        ))),
-                  ),
-                ),
-              )
-            ],
-          )
-        ],
       ),
     );
   }

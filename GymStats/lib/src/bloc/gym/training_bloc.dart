@@ -91,6 +91,37 @@ class TrainingBloc {
     _userBloc = userBloc;
   }
 
+  Future checkForOpenSesions() async {
+    if (isTraining == false) {
+      final userID = _userBloc.currentUser.userData.id;
+      final result = await _userBloc.getUserDocumentFromID(userID).collection("trainings").where("endTime", isEqualTo: 0).orderBy("startTime", descending: true).get();
+      if (result.docs.length > 0) {
+        print(result.docs);
+        final training = result.docs.first;
+        _activeTraining = TrainingModel.fromFirebase(training);
+        final workout = await _userBloc.getUserDocumentFromID(userID).collection("workouts").doc(_activeTraining.workoutID).get();
+        if (workout.exists == false) {
+          return false;
+        }
+        _activeWorkout = WorkoutModel.fromFirebase(workout);
+        _activeExerciseIdx = 0;
+        if (_activeTraining.series.length > 0) {
+          for (int i = 0; i < _activeWorkout.exerciseIDList.length; i++) {
+            if (_activeWorkout.exerciseIDList[i] == _activeTraining.series.last.exerciseID) {
+              _activeExerciseIdx = i;
+            }
+          }
+        }
+        _activeExercise = await _exerciseBloc.getExercise(_activeWorkout.exerciseIDList[_activeExerciseIdx]);
+        if (_activeExercise == null) return false;
+        _isTraining = true;
+        updateStream(TrainingEventType.AlreadyTraining);
+        return true;
+      }
+    }
+    return false;
+  }
+
   void dispose() {
     _exerciseStreamController.close();
 
@@ -120,7 +151,15 @@ class TrainingBloc {
 
     //Crea una nueva sesión de entrenamiento(TrainingModel)
     final userID = _userBloc.currentUser.userData.id;
-    final result = await FirebaseFirestore.instance.collection("users").doc(userID).collection("trainings").add(TrainingModel(startTime: DateTime.now()).toJson());
+    final result = await FirebaseFirestore.instance
+        .collection("users")
+        .doc(userID)
+        .collection("trainings") //
+        .add(TrainingModel(
+          startTime: DateTime.now(),
+          endTime: DateTime.fromMicrosecondsSinceEpoch(0),
+          workoutID: _activeWorkout.id,
+        ).toJson());
 
     if (result == null) {
       print("Error creating new training");

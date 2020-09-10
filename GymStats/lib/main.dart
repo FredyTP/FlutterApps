@@ -8,6 +8,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   final blocProvider = BlocProvider();
+  blocProvider.init();
   runApp(AppStateContainer(
     child: GymStatsApp(),
     blocProvider: blocProvider,

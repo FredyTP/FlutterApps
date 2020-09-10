@@ -170,7 +170,7 @@ class _GraphicsPageState extends State<GraphicsPage> {
               builder: (context) {
                 return ExercisesPage(
                   canEdit: false,
-                  onSelect: (BuildContext context, ExerciseModel model) {
+                  onSelect: (BuildContext context, ExerciseModel model, Widget imgl) {
                     Navigator.of(context).pop(model.id);
                   },
                 );
