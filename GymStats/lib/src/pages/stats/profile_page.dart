@@ -15,26 +15,21 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     final bloc = AppStateContainer.of(context).blocProvider;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Perfil"),
-      ),
-      body: Container(
-        child: Column(
-          children: [
-            StreamBuilder<ProfileData>(
-                stream: bloc.trainingBloc.getProfileDataStream(bloc.appUserBloc.currentUser.userData.id),
-                builder: (context, snapshot) {
-                  print("data: ");
-                  print(snapshot.data);
-                  if (snapshot.hasData)
-                    return _createProfileInfo(snapshot.data);
-                  else {
-                    return LinearProgressIndicator();
-                  }
-                }),
-          ],
-        ),
+    return Container(
+      child: Column(
+        children: [
+          StreamBuilder<ProfileData>(
+              stream: bloc.trainingBloc.getProfileDataStream(bloc.appUserBloc.currentUser.userData.id),
+              builder: (context, snapshot) {
+                print("data: ");
+                print(snapshot.data);
+                if (snapshot.hasData)
+                  return _createProfileInfo(snapshot.data);
+                else {
+                  return LinearProgressIndicator();
+                }
+              }),
+        ],
       ),
     );
   }

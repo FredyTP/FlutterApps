@@ -10,12 +10,30 @@ class ExerciseInfoPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Container(
-          child: Hero(
-            child: exerciseImg,
-            tag: exerciseModel.id,
-            transitionOnUserGestures: true,
-          ),
+        child: Column(
+          children: [
+            Container(
+              child: Hero(
+                child: exerciseImg,
+                tag: exerciseModel.id,
+                transitionOnUserGestures: true,
+              ),
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            Divider(),
+            Center(
+              child: Text(
+                "¿Como realizarlo?",
+                style: TextStyle(fontSize: 25),
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.all(20),
+              child: Text(exerciseModel.description),
+            )
+          ],
         ),
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:GymStats/src/pages/exercises/exercises_page.dart';
 import 'package:GymStats/src/pages/home_page.dart';
 import 'package:GymStats/src/pages/stats/graphics_page.dart';
+import 'package:GymStats/src/pages/stats/stats_page.dart';
 import 'package:GymStats/src/pages/stats/training_stats_page.dart';
 import 'package:GymStats/src/pages/training/training_page.dart';
 import 'package:GymStats/src/pages/stats/trainings_list_page.dart';
@@ -31,6 +32,7 @@ class _LoginStreamWrapperState extends State<LoginStreamWrapper> {
     ProfilePage.route: (BuildContext context) => ProfilePage(),
     TrainingStatsPage.route: (BuildContext context) => TrainingStatsPage(),
     GraphicsPage.route: (BuildContext context) => GraphicsPage(),
+    StatsPage.route: (BuildContext context) => StatsPage(),
   };
 
   final _navigatorKey = GlobalKey<NavigatorState>();

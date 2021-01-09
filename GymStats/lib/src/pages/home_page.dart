@@ -2,6 +2,9 @@ import 'package:GymStats/src/app_state.dart';
 import 'package:GymStats/src/model/workout_model.dart';
 import 'package:GymStats/src/pages/exercises/exercises_page.dart';
 import 'package:GymStats/src/pages/stats/graphics_page.dart';
+import 'package:GymStats/src/pages/stats/profile_page.dart';
+import 'package:GymStats/src/pages/stats/stats_page.dart';
+import 'package:GymStats/src/pages/stats/trainings_list_page.dart';
 import 'package:GymStats/src/pages/training/training_page.dart';
 import 'package:GymStats/src/pages/workout_template_list_page.dart';
 import 'package:GymStats/src/widgets/logic/training_wrapper.dart';
@@ -67,7 +70,8 @@ class _HomePageState extends State<HomePage> {
                       },
                     ))),
             buildMenuCard(context, "Crear Plantilla", imgpath: "assets/menu/undraw_add_notes.png", route: CreateWorkoutPage.route),
-            buildMenuCard(context, "Perfil", imgpath: "assets/menu/undraw_fitness_stats.png", route: GraphicsPage.route),
+            buildMenuCard(context, "Entrenamientos", imgpath: "assets/menu/undraw_fitness_stats.png", route: TrainingsListPage.route),
+            buildMenuCard(context, "Perfil", imgpath: "assets/menu/undraw_fitness_stats.png", route: StatsPage.route),
           ],
         ),
       ),

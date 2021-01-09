@@ -64,7 +64,7 @@ class TrainingBloc {
 
   void addReps(int reps) {
     _exerciseReps += reps;
-    if (reps > 1) reps = 1;
+    if (_exerciseReps < 1) _exerciseReps = 1;
   }
 
   void addWeight(num weight) {

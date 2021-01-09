@@ -17,11 +17,8 @@ class _TrainingStatsPageState extends State<TrainingStatsPage> {
   @override
   Widget build(BuildContext context) {
     final bloc = AppStateContainer.of(context).blocProvider;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Estadisticas"),
-      ),
-      body: StreamBuilder<List<TrainingModel>>(
+    return Container(
+      child: StreamBuilder<List<TrainingModel>>(
         stream: bloc.trainingBloc.getTrainingsList(bloc.appUserBloc.currentUser.userData.id),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {

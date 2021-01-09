@@ -25,9 +25,8 @@ class _GraphicsPageState extends State<GraphicsPage> {
   @override
   Widget build(BuildContext context) {
     final bloc = AppStateContainer.of(context).blocProvider;
-    return Scaffold(
-      appBar: AppBar(),
-      body: Column(
+    return Container(
+      child: Column(
         children: [createExerciseGraphic(bloc)],
       ),
     );
@@ -86,6 +85,8 @@ class _GraphicsPageState extends State<GraphicsPage> {
           onChanged: (value) {
             setState(() {
               fromDate = value;
+              print((value as DateTime).millisecondsSinceEpoch > 1599778679452);
+              print(DateTime.fromMillisecondsSinceEpoch(1599778679452));
             });
           },
           value: fromDate,
@@ -116,7 +117,7 @@ class _GraphicsPageState extends State<GraphicsPage> {
             ),
             DropdownMenuItem(
               child: Text("Todos"),
-              value: DateTime.fromMillisecondsSinceEpoch(0),
+              value: DateTime.fromMillisecondsSinceEpoch(1),
             ),
           ],
         )
@@ -126,11 +127,12 @@ class _GraphicsPageState extends State<GraphicsPage> {
 
   static DateTime getToday() {
     final now = DateTime.now();
+
     final day = now.day;
     final month = now.month;
     final year = now.year;
 
-    return DateTime.utc(year, month, day);
+    return DateTime(year, month, day);
   }
 
   void showPopupCalendar(BuildContext context) {
