@@ -8,6 +8,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:hyperloop_datastruct_generation/home_page.dart';
 
 import 'package:win32/win32.dart';
@@ -38,6 +39,7 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primaryColorDark: Color.fromRGBO(55, 55, 55, 1.0),
         platform: TargetPlatform.windows,
+        fontFamily: GoogleFonts.robotoSlab().fontFamily,
         appBarTheme: AppBarTheme(color: Color.fromRGBO(35, 35, 35, 1.0), centerTitle: false, systemOverlayStyle: SystemUiOverlayStyle.dark),
       ),
       home: HomePage(),

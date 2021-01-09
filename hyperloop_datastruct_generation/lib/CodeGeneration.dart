@@ -5,6 +5,7 @@
 //Everyone is permitted to copy and distribute verbatim copies
 // of this license document, but changing it is not allowed.
 //Author: Alfredo Torres Pons
+
 import 'package:hyperloop_datastruct_generation/VariableInfo.dart';
 import 'package:hyperloop_datastruct_generation/variable.dart';
 

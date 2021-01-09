@@ -7,9 +7,11 @@
 //Author: Alfredo Torres Pons
 
 import 'dart:io';
+import 'dart:math';
 
 import 'package:filepicker_windows/filepicker_windows.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'package:hyperloop_datastruct_generation/DataType.dart';
 import 'package:hyperloop_datastruct_generation/variable.dart';
@@ -41,33 +43,54 @@ class _HomePageState extends State<HomePage> {
   DataType lastDataType = DataType.float();
 
   //-------COLORS----------//
-  Color varTypeColor = Color.fromRGBO(190, 232, 160, 1.0);
-  Color structTypeColor = Color.fromRGBO(245, 156, 154, 1.0);
-  Color varNameColor = Color.fromRGBO(245, 214, 162, 1.0);
-  Color lenColor = Color.fromRGBO(170, 239, 242, 1.0);
+  final Color varTypeColor = Color.fromRGBO(190, 232, 160, 1.0);
+  final Color structTypeColor = Color.fromRGBO(245, 156, 154, 1.0);
+  final Color varNameColor = Color.fromRGBO(245, 214, 162, 1.0);
+  final Color lenColor = Color.fromRGBO(170, 239, 242, 1.0);
+  final Color deleteDialogBGColor = Color.fromRGBO(40, 40, 40, 0.95);
+  final Color deleteDialogFontColor = Color.fromRGBO(220, 220, 220, 1);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Center(child: Text("Hyperloop - UPV DataStruct Generation")),
+        title: Center(
+            child: Stack(children: [
+          Positioned.fill(
+            child: Image.asset(
+              "assets/img/Shaping_the_future-03.png",
+              isAntiAlias: true,
+            ),
+          ),
+          Image.asset("assets/img/Logo_Hyperloop_UPV-27.png"),
+        ])),
         actions: appBarActions(),
       ),
-      body: Container(
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height,
-        child: Column(
-          children: [
-            buildStructureInfoWidget(),
-            Expanded(
-              child: Container(
-                color: Color.fromRGBO(55, 55, 55, 1.0),
-                child: ListView(
-                  children: generateWidgetTree(context, variableTree.varlist),
+      body: GestureDetector(
+        onTap: () => setState(() => unSelect()),
+        child: Container(
+          color: Color.fromRGBO(55, 55, 55, 1.0),
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height,
+          child: Column(
+            children: [
+              buildStructureInfoWidget(),
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage("assets/img/Logo_Hyperloop_UPV-07.png"),
+                      fit: BoxFit.contain,
+                      scale: 0.2,
+                    ),
+                  ),
+                  child: ListView(
+                    children: generateWidgetTree(context, variableTree.varlist),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -101,10 +124,14 @@ class _HomePageState extends State<HomePage> {
 
 //----------------APPBAR---------------//
   List<Widget> appBarActions() {
-    final textStyle = TextStyle(color: Color.fromRGBO(230, 230, 230, 1.0));
+    final barcolor = Color.fromRGBO(150, 150, 150, 1.0);
+    final divider = VerticalDivider(color: barcolor, indent: 10, endIndent: 10);
+    final textStyle = TextStyle(fontSize: 15, color: Color.fromRGBO(230, 230, 230, 1.0));
     return [
       FlatButton(onPressed: loadDataStructure, child: Text("Load Data Structure", style: textStyle)),
+      divider,
       FlatButton(onPressed: saveDataStructure, child: Text("Save Data Structure", style: textStyle)),
+      divider,
       FlatButton(onPressed: saveGeneratedCode, child: Text("Generate Code", style: textStyle)),
     ];
   }
@@ -161,9 +188,12 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget variableEditField({Variable variable, void Function(String) onChanged, Color color, String initialText, String labelText}) {
-    return roundedContainer(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6.0),
       child: TextFormField(
         decoration: InputDecoration(
+            filled: true,
+            fillColor: color,
             enabledBorder: OutlineInputBorder(
               borderSide: BorderSide(color: Colors.black, width: 1),
               borderRadius: BorderRadius.all(
@@ -186,7 +216,6 @@ class _HomePageState extends State<HomePage> {
         },
         onChanged: (value) => onChanged(value),
       ),
-      color: color,
     );
   }
 
@@ -207,12 +236,12 @@ class _HomePageState extends State<HomePage> {
     if (editingVar == variable) {
       child = editVariableWidget(context, variable, children, getDepthColor(depth));
     } else {
-      child = variableWidget(variable, children, getDepthColor(depth));
+      child = variableWidget(context, variable, children, getDepthColor(depth));
     }
     return child;
   }
 
-  Widget variableWidget(Variable variable, Widget children, Color color) {
+  Widget variableWidget(BuildContext context, Variable variable, Widget children, Color color) {
     return roundedContainer(
         child: Column(
           children: [
@@ -235,16 +264,14 @@ class _HomePageState extends State<HomePage> {
                       roundedContainer(child: Text(variable.type.type), color: varTypeColor),
                       variable.isStruct() ? roundedContainer(child: Text(variable.structType), color: structTypeColor) : SizedBox.shrink(),
                       roundedContainer(child: Text(variable.name), color: varNameColor),
-                      roundedContainer(child: Text("[${variable.arrayLen.toString()}]"), color: lenColor),
+                      variable != variableTree.headnode ? roundedContainer(child: Text("[${variable.arrayLen.toString()}]"), color: lenColor) : SizedBox.shrink(),
                       variable.isStruct() && variable.hide == true ? Text("${variable.children.length} items") : SizedBox.shrink(),
-                      SizedBox(width: 40),
+                      SizedBox(width: 20),
                       variable != variableTree.headnode
                           ? IconButton(
-                              icon: Container(child: Icon(Icons.add_circle, color: Colors.red), transform: Matrix4.rotationZ(3.1416 / 4)),
+                              icon: Transform.rotate(angle: pi / 4, child: Icon(Icons.add_circle, color: Colors.red)),
                               onPressed: () {
-                                setState(() {
-                                  variableTree.deleteVariable(variable);
-                                });
+                                deleteVariableCallback(context, variable);
                               },
                             )
                           : SizedBox.shrink(),
@@ -258,6 +285,55 @@ class _HomePageState extends State<HomePage> {
         color: color);
   }
 
+  void deleteVariableCallback(BuildContext context, Variable variable) async {
+    if (variable.isStruct() && variable.children.length > 0) {
+      final shouldDelete = await showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                backgroundColor: deleteDialogBGColor,
+                content: Text(
+                  "You are going to delete ${variable.name} and all its content (${Variable.numVariables(variable.children, 0)} elements).\n Do you want to continue?",
+                  style: TextStyle(color: deleteDialogFontColor),
+                ),
+                title: Text(
+                  "Delete Struct",
+                  style: TextStyle(color: deleteDialogFontColor),
+                ),
+                elevation: 10,
+                actions: [
+                  RaisedButton(
+                    color: Colors.red,
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text("Delete", style: TextStyle(color: deleteDialogFontColor, fontSize: 17)),
+                    ),
+                  ),
+                  FlatButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text("Cancel", style: TextStyle(color: deleteDialogFontColor, fontSize: 17)),
+                    ),
+                  )
+                ],
+              );
+            },
+          ) ??
+          false;
+      if (shouldDelete) {
+        setState(() {
+          variableTree.deleteVariable(variable);
+        });
+      }
+    } else {
+      setState(() {
+        variableTree.deleteVariable(variable);
+      });
+    }
+  }
+
   Widget editVariableWidget(BuildContext context, Variable variable, Widget children, Color color) {
     return roundedContainer(
         child: Container(
@@ -265,10 +341,7 @@ class _HomePageState extends State<HomePage> {
             children: [
               Row(
                 children: [
-                  Expanded(
-                    flex: 2,
-                    child: roundedContainer(child: dataTypeSelector(), color: varTypeColor),
-                  ),
+                  roundedContainer(child: dataTypeSelector(), color: varTypeColor),
                   editingVar.type.type == "struct"
                       ? Expanded(
                           flex: 3,
@@ -302,18 +375,20 @@ class _HomePageState extends State<HomePage> {
                   ),
                   Expanded(
                     flex: 3,
-                    child: variableEditField(
-                      variable: variable,
-                      onChanged: (value) {
-                        setState(() {
-                          variable.arrayLen = int.tryParse(value) ?? 1;
-                          editingVar = variable;
-                        });
-                      },
-                      labelText: "Array Lenght",
-                      initialText: variable.arrayLen.toString(),
-                      color: lenColor,
-                    ),
+                    child: variable != variableTree.headnode
+                        ? variableEditField(
+                            variable: variable,
+                            onChanged: (value) {
+                              setState(() {
+                                variable.arrayLen = int.tryParse(value) ?? 1;
+                                editingVar = variable;
+                              });
+                            },
+                            labelText: "Array Lenght",
+                            initialText: variable.arrayLen.toString(),
+                            color: lenColor,
+                          )
+                        : SizedBox(),
                   ),
                 ],
               ),

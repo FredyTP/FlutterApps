@@ -20,6 +20,7 @@ class VariableTree {
       Variable(
         type: DataType("struct", 0, "parseStruct?"),
         name: "DataStruct",
+        structType: "BaseDataStruct",
         children: List<Variable>.empty(growable: true),
       )
     ];
