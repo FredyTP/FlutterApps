@@ -11,7 +11,6 @@ import 'dart:math';
 
 import 'package:filepicker_windows/filepicker_windows.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'package:hyperloop_datastruct_generation/DataType.dart';
 import 'package:hyperloop_datastruct_generation/variable.dart';
@@ -43,12 +42,15 @@ class _HomePageState extends State<HomePage> {
   DataType lastDataType = DataType.float();
 
   //-------COLORS----------//
-  final Color varTypeColor = Color.fromRGBO(190, 232, 160, 1.0);
-  final Color structTypeColor = Color.fromRGBO(245, 156, 154, 1.0);
-  final Color varNameColor = Color.fromRGBO(245, 214, 162, 1.0);
-  final Color lenColor = Color.fromRGBO(170, 239, 242, 1.0);
-  final Color deleteDialogBGColor = Color.fromRGBO(40, 40, 40, 0.95);
+  final Color varTypeColor = Color.fromRGBO(170, 78, 47, 1.0);
+  final Color structTypeColor = Color.fromRGBO(71, 74, 117, 1.0);
+  final Color varNameColor = Color.fromRGBO(163, 163, 184, 1.0);
+  final Color lenColor = Color.fromRGBO(218, 218, 226, 1.0);
+  final Color deleteDialogBGColor = Color.fromRGBO(50, 50, 60, 0.95);
   final Color deleteDialogFontColor = Color.fromRGBO(220, 220, 220, 1);
+  final Color nameFontColor = Color.fromRGBO(230, 230, 232, 1);
+  final Color boxColor = Color.fromRGBO(50, 50, 65, 1);
+  final Color dropdownArrowColor = Color.fromRGBO(163, 163, 184, 1.0);
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +71,7 @@ class _HomePageState extends State<HomePage> {
       body: GestureDetector(
         onTap: () => setState(() => unSelect()),
         child: Container(
-          color: Color.fromRGBO(55, 55, 55, 1.0),
+          color: Color.fromRGBO(35, 35, 35, 1.0),
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
           child: Column(
@@ -117,7 +119,7 @@ class _HomePageState extends State<HomePage> {
           text,
           style: TextStyle(color: Colors.black, fontSize: 17),
         ),
-        color: Color.fromRGBO(230, 230, 230, 1.0),
+        color: lenColor,
       ),
     );
   }
@@ -166,12 +168,12 @@ class _HomePageState extends State<HomePage> {
     return Color.fromRGBO(230 - 10 * depth, 230 - 7 * depth, 230 - 2 * depth, 1.0);
   }
 
-  Widget roundedContainer({Widget child, Color color}) {
+  Widget roundedContainer({Widget child, Color color, bool border = true}) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       margin: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       child: child,
-      decoration: BoxDecoration(border: Border.all(), borderRadius: BorderRadius.circular(10), color: color),
+      decoration: BoxDecoration(border: border ? Border.all() : null, borderRadius: BorderRadius.circular(10), color: color),
       alignment: Alignment.center,
     );
   }
@@ -187,28 +189,30 @@ class _HomePageState extends State<HomePage> {
         label: Text(""));
   }
 
-  Widget variableEditField({Variable variable, void Function(String) onChanged, Color color, String initialText, String labelText}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 6.0),
+  Widget variableEditField({Variable variable, void Function(String) onChanged, Color color, String initialText, String labelText, bool light = false}) {
+    return roundedContainer(
+      border: false,
+      color: color,
       child: TextFormField(
+        style: TextStyle(color: light ? nameFontColor : Colors.black),
         decoration: InputDecoration(
             filled: true,
             fillColor: color,
             enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.black, width: 1),
+              borderSide: BorderSide(color: light ? Color.fromRGBO(150, 156, 170, 1) : Colors.black, width: 1),
               borderRadius: BorderRadius.all(
                 Radius.circular(10.0),
               ),
             ),
             focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.black, width: 1),
+              borderSide: BorderSide(color: light ? nameFontColor : Colors.black, width: 1),
               borderRadius: BorderRadius.all(
                 Radius.circular(10.0),
               ),
             ),
             hintText: labelText,
             labelText: labelText,
-            labelStyle: TextStyle(color: Colors.black)),
+            labelStyle: TextStyle(color: light ? nameFontColor : Colors.black)),
         cursorColor: Colors.black,
         initialValue: initialText,
         onFieldSubmitted: (value) {
@@ -242,47 +246,61 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget variableWidget(BuildContext context, Variable variable, Widget children, Color color) {
-    return roundedContainer(
-        child: Column(
-          children: [
-            GestureDetector(
-              onTap: () {
-                setState(() {
-                  editingVar = variable;
-                });
-              },
-              child: roundedContainer(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      variable.isStruct()
-                          ? IconButton(
-                              icon: Icon(variable.hide ? Icons.arrow_forward_outlined : Icons.arrow_downward_outlined),
-                              onPressed: () => setState(() => variable.hide = !variable.hide),
-                            )
-                          : SizedBox.shrink(),
-                      roundedContainer(child: Text(variable.type.type), color: varTypeColor),
-                      variable.isStruct() ? roundedContainer(child: Text(variable.structType), color: structTypeColor) : SizedBox.shrink(),
-                      roundedContainer(child: Text(variable.name), color: varNameColor),
-                      variable != variableTree.headnode ? roundedContainer(child: Text("[${variable.arrayLen.toString()}]"), color: lenColor) : SizedBox.shrink(),
-                      variable.isStruct() && variable.hide == true ? Text("${variable.children.length} items") : SizedBox.shrink(),
-                      SizedBox(width: 20),
-                      variable != variableTree.headnode
-                          ? IconButton(
-                              icon: Transform.rotate(angle: pi / 4, child: Icon(Icons.add_circle, color: Colors.red)),
-                              onPressed: () {
-                                deleteVariableCallback(context, variable);
-                              },
-                            )
-                          : SizedBox.shrink(),
-                    ],
+    final widget = GestureDetector(
+        onTap: () {
+          setState(() {
+            editingVar = variable;
+          });
+        },
+        child: roundedContainer(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              variable.isStruct()
+                  ? IconButton(
+                      icon: Icon(
+                        variable.hide ? Icons.arrow_forward_outlined : Icons.arrow_downward_outlined,
+                        color: dropdownArrowColor,
+                      ),
+                      onPressed: () => setState(() => variable.hide = !variable.hide),
+                    )
+                  : SizedBox.shrink(),
+              roundedContainer(child: Text(variable.type.type, style: TextStyle(color: nameFontColor)), color: varTypeColor),
+              variable.isStruct() ? roundedContainer(child: Text(variable.structType, style: TextStyle(color: nameFontColor)), color: structTypeColor) : SizedBox.shrink(),
+              roundedContainer(
+                  child: Text(
+                    variable.name,
                   ),
-                  color: Color.fromRGBO(160, 173, 219, 1)),
-            ),
-            children
-          ],
-        ),
-        color: color);
+                  color: varNameColor),
+              variable != variableTree.headnode ? roundedContainer(child: Text("[${variable.arrayLen.toString()}]"), color: lenColor) : SizedBox.shrink(),
+              variable.isStruct() && variable.hide == true
+                  ? Text(
+                      "${variable.children.length} items",
+                      style: TextStyle(color: nameFontColor),
+                    )
+                  : SizedBox.shrink(),
+              SizedBox(width: 20),
+              variable != variableTree.headnode
+                  ? IconButton(
+                      icon: Transform.rotate(angle: pi / 4, child: Icon(Icons.add_circle, color: Colors.red)),
+                      onPressed: () {
+                        deleteVariableCallback(context, variable);
+                      },
+                    )
+                  : SizedBox.shrink(),
+            ],
+          ),
+          color: boxColor,
+        ));
+    if (variable.isStruct()) {
+      return roundedContainer(
+          child: Column(
+            children: [widget, children],
+          ),
+          color: color);
+    } else {
+      return widget;
+    }
   }
 
   void deleteVariableCallback(BuildContext context, Variable variable) async {
@@ -342,10 +360,11 @@ class _HomePageState extends State<HomePage> {
               Row(
                 children: [
                   roundedContainer(child: dataTypeSelector(), color: varTypeColor),
-                  editingVar.type.type == "struct"
+                  editingVar.isStruct()
                       ? Expanded(
                           flex: 3,
                           child: variableEditField(
+                              light: true,
                               variable: variable,
                               onChanged: (value) {
                                 setState(() {
@@ -405,6 +424,14 @@ class _HomePageState extends State<HomePage> {
 
   Widget dataTypeSelector() {
     return DropdownButton<String>(
+      icon: Icon(
+        // Add this
+        Icons.arrow_drop_down, // Add this
+        color: nameFontColor, // Add this
+      ),
+      focusColor: Colors.black,
+      style: TextStyle(color: nameFontColor, fontSize: 17),
+      dropdownColor: varTypeColor,
       items: dataTypeList
           .map((e) => DropdownMenuItem(
                 child: Text(e.type),

@@ -119,7 +119,7 @@ class TSCodeGenerator {
   }
 
   String generateCode(Variable headnode) {
-    int bufferSize = Variable.countStructSizeRecursive(headnode.children, 0);
+    //int bufferSize = Variable.countStructSizeRecursive(headnode.children, 0);
     listedVariables = recursiveGenList(headnode, []);
     print(listedVariables.length);
     for (int i = 1; i < listedVariables.length; i++) {
