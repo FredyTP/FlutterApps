@@ -9,7 +9,7 @@
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:hyperloop_datastruct_generation/DataType.dart';
+import 'package:hyperloop_datastruct_generation/Model/DataType.dart';
 
 class Variable {
   DataType type;

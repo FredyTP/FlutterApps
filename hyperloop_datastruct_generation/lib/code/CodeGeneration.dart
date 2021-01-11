@@ -6,8 +6,8 @@
 // of this license document, but changing it is not allowed.
 //Author: Alfredo Torres Pons
 
-import 'package:hyperloop_datastruct_generation/VariableInfo.dart';
-import 'package:hyperloop_datastruct_generation/variable.dart';
+import 'package:hyperloop_datastruct_generation/Model/VariableInfo.dart';
+import 'package:hyperloop_datastruct_generation/Model/variable.dart';
 
 String recursiveGenerateCCode(List<Variable> varlist, Variable struct) {
   String code = "";

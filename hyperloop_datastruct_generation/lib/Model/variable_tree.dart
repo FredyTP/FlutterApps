@@ -6,7 +6,7 @@
 // of this license document, but changing it is not allowed.
 //Author: Alfredo Torres Pons
 
-import 'package:hyperloop_datastruct_generation/variable.dart';
+import 'package:hyperloop_datastruct_generation/Model/variable.dart';
 
 import 'DataType.dart';
 
@@ -18,7 +18,7 @@ class VariableTree {
   VariableTree() {
     varlist = [
       Variable(
-        type: DataType("struct", 0, "parseStruct?"),
+        type: DataType.struct(),
         name: "DataStruct",
         structType: "BaseDataStruct",
         children: List<Variable>.empty(growable: true),
@@ -44,6 +44,15 @@ class VariableTree {
 
   String toJson() {
     return headnode.toJson();
+  }
+
+  factory VariableTree.fromMap(Map<String, dynamic> map) {
+    final tree = VariableTree();
+    tree.varlist[0] = Variable.fromMap(map);
+    return tree;
+  }
+  Map<String, dynamic> toMap() {
+    return headnode.toMap();
   }
 
   void addVariable(Variable parent, Variable child) {

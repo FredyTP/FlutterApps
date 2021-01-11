@@ -6,7 +6,7 @@
 // of this license document, but changing it is not allowed.
 //Author: Alfredo Torres Pons
 
-import 'package:hyperloop_datastruct_generation/variable.dart';
+import 'package:hyperloop_datastruct_generation/Model/variable.dart';
 
 class VariableInfo {
   Variable vari;

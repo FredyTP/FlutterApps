@@ -9,6 +9,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hyperloop_datastruct_generation/board_selector.dart';
 import 'package:hyperloop_datastruct_generation/home_page.dart';
 
 import 'package:win32/win32.dart';
