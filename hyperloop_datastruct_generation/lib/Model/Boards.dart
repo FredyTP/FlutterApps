@@ -26,7 +26,8 @@ class Boards {
   factory Boards.fromMap(Map<String, dynamic> map) {
     return Boards(boardlist: map["boardlist"].map((e) => BoardModel.fromMap(e)).toList().cast<BoardModel>());
   }
-  factory Boards.fromJson(String json) {
-    return Boards.fromMap(jsonDecode(json));
+  void loadFromJson(String json) {
+    final map = jsonDecode(json);
+    this.boardlist = map["boardlist"].map((e) => BoardModel.fromMap(e)).toList().cast<BoardModel>();
   }
 }

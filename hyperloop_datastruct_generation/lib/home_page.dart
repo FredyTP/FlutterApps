@@ -7,16 +7,11 @@
 //Author: Alfredo Torres Pons
 
 import 'dart:io';
-import 'dart:math';
-
-import 'package:filepicker_windows/filepicker_windows.dart';
 import 'package:flutter/material.dart';
 import 'package:hyperloop_datastruct_generation/Model/BoardModel.dart';
 
-import 'package:hyperloop_datastruct_generation/Model/DataType.dart';
-import 'package:hyperloop_datastruct_generation/Model/variable.dart';
-import 'package:hyperloop_datastruct_generation/Model/variable_tree.dart';
 import 'package:hyperloop_datastruct_generation/data_struct_editor.dart';
+import 'package:hyperloop_datastruct_generation/file_manager.dart';
 
 import 'Model/Boards.dart';
 import 'board_selector.dart';
@@ -31,7 +26,11 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final Boards boards = Boards(boardlist: [BoardModel(name: "MASTER")]);
+  final boardSelectorKey = GlobalKey<BoardSelectorState>();
+  final structEditorKey = GlobalKey<DataStructEditorState>();
   BoardModel selectedBoard;
+  FileManager fileManager;
+
   //-------COLORS----------//
   final Color varTypeColor = Color.fromRGBO(170, 78, 47, 1.0);
   final Color structTypeColor = Color.fromRGBO(71, 74, 117, 1.0);
@@ -47,6 +46,9 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     selectedBoard = boards.boardlist.first;
+    fileManager = FileManager(
+      onLoadData: () => setState(() {}),
+    );
   }
 
   void selectBoard(BoardModel model) {
@@ -80,24 +82,33 @@ class _HomePageState extends State<HomePage> {
         ])),
         actions: appBarActions(),
       ),
-      body: Row(
-        children: [
-          AnimatedContainer(
-            width: showBoards ? 200 : 0,
-            duration: Duration(milliseconds: 300),
-            curve: Curves.easeOutSine,
-            child: BoardSelector(
-              boards: boards,
-              selectBoard: this.selectBoard,
+      body: GestureDetector(
+        onTap: () {
+          structEditorKey?.currentState?.unSelect();
+          boardSelectorKey?.currentState?.unSelect();
+        },
+        child: Row(
+          children: [
+            AnimatedContainer(
+              width: showBoards ? 200 : 0,
+              duration: Duration(milliseconds: 300),
+              curve: Curves.easeOutSine,
+              child: BoardSelector(
+                key: boardSelectorKey,
+                boards: boards,
+                selectBoard: this.selectBoard,
+                fileManager: fileManager,
+              ),
             ),
-          ),
-          Expanded(
-            flex: 3,
-            child: DataStructEditor(
-              variableTree: selectedBoard.data,
+            Expanded(
+              flex: 3,
+              child: DataStructEditor(
+                key: structEditorKey,
+                variableTree: selectedBoard.data,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -110,36 +121,30 @@ class _HomePageState extends State<HomePage> {
     final divider = VerticalDivider(color: barcolor, indent: 10, endIndent: 10);
     final textStyle = TextStyle(fontSize: 15, color: Color.fromRGBO(230, 230, 230, 1.0));
     return [
-      FlatButton(onPressed: loadDataStructure, child: Text("Load Data Structure", style: textStyle)),
+      FlatButton(onPressed: loadFile, child: Text("Load Data Structure", style: textStyle)),
       divider,
-      FlatButton(onPressed: saveDataStructure, child: Text("Save Data Structure", style: textStyle)),
+      FlatButton(onPressed: saveFile, child: Text("Save Data Structure", style: textStyle)),
       divider,
       FlatButton(onPressed: saveGeneratedCode, child: Text("Generate Code", style: textStyle)),
     ];
   }
 
   void saveGeneratedCode() async {
-    File file = File("${selectedBoard.data.headnode.name}_generated.js");
+    File file = File("${selectedBoard.name}_${selectedBoard.data.headnode.name}_generated.js");
     final codeGen = TSCodeGenerator();
     await file.writeAsString(codeGen.generateCode(selectedBoard.data.headnode));
-    File filec = File("${selectedBoard.data.headnode.name}_generated.h");
+    File filec = File("${selectedBoard.name}_${selectedBoard.data.headnode.name}_generated.h");
     await filec.writeAsString(generateCCode(selectedBoard.data.headnode));
   }
 
-  void saveDataStructure() async {
-    var saveFile = SaveFilePicker();
-    saveFile.filterSpecification = {"HLDataStructure": "*.hlds"};
-    saveFile.defaultExtension = "hlds";
-    var result = saveFile.getFile();
-    if (result != null) await result.writeAsString(selectedBoard.data.toJson());
+  void saveFile() async {
+    await fileManager.saveFile(boards);
   }
 
-  void loadDataStructure() async {
-    var openFile = OpenFilePicker();
-    openFile.filterSpecification = {"HLDataStructure": "*.hlds"};
-    openFile.defaultExtension = "hlds";
-    var result = openFile.getFile();
-    if (result != null) selectedBoard.data.loadJson(await result.readAsString());
+  void loadFile() async {
+    await fileManager.loadFile(boards);
+    selectedBoard = boards.boardlist.first;
+    boardSelectorKey.currentState.selectedBoard = selectedBoard;
     setState(() {});
   }
 

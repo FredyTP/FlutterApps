@@ -1,20 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:hyperloop_datastruct_generation/Model/BoardModel.dart';
+import 'package:hyperloop_datastruct_generation/file_manager.dart';
 
 import 'Model/Boards.dart';
 
 class BoardSelector extends StatefulWidget {
   final Boards boards;
   final bool show;
+  final FileManager fileManager;
   final void Function(BoardModel) selectBoard;
-  BoardSelector({Key key, this.boards, this.show = true, this.selectBoard}) : super(key: key);
+  BoardSelector({Key key, this.boards, this.show = true, this.selectBoard, this.fileManager}) : super(key: key);
 
   @override
-  _BoardSelectorState createState() => _BoardSelectorState();
+  BoardSelectorState createState() => BoardSelectorState();
 }
 
-class _BoardSelectorState extends State<BoardSelector> {
+class BoardSelectorState extends State<BoardSelector> {
   BoardModel selectedBoard;
+
+  BoardModel editTextBoard;
+  String initialName = "NewBoard";
   //-------COLORS----------//
   final Color varTypeColor = Color.fromRGBO(170, 78, 47, 1.0);
   final Color structTypeColor = Color.fromRGBO(71, 74, 117, 1.0);
@@ -58,12 +64,12 @@ class _BoardSelectorState extends State<BoardSelector> {
             ),
             Expanded(
               child: ListView(
-                children: buildBoardWidgetList(),
+                children: buildBoardWidgetList(context),
               ),
             ),
             FlatButton(
               minWidth: 200,
-              onPressed: () => addNewBoard(BoardModel(name: "NAVIGATION")),
+              onPressed: () => addNewBoard(BoardModel(name: "")),
               child: Icon(Icons.add),
               color: Colors.green,
             )
@@ -74,20 +80,86 @@ class _BoardSelectorState extends State<BoardSelector> {
       return SizedBox.shrink();
   }
 
+  void unSelect() {
+    if (editTextBoard?.name == "") editTextBoard?.name = initialName;
+    setState(() {
+      editTextBoard = null;
+      initialName = "NewBoard";
+    });
+  }
+
   void addNewBoard(BoardModel model) {
+    editTextBoard = model;
     setState(() => widget.boards.add(model));
   }
 
   void deleteBoard(BoardModel model) {
-    widget.boards.remove(model);
+    setState(() => widget.boards.remove(model));
   }
 
-  buildBoardWidgetList() {
-    return widget.boards.boardlist.map((e) => buildBoardWidget(e)).toList();
+  buildBoardWidgetList(BuildContext context) {
+    return widget.boards.boardlist.map((e) => buildBoardWidget(context, e)).toList();
   }
 
-  Widget buildBoardWidget(BoardModel e) {
+  Future<String> _showPopupMenu(BuildContext context, Offset offset, BoardModel board) async {
+    return await showMenu(
+      context: context,
+      position: RelativeRect.fromLTRB(offset.dx, offset.dy, double.infinity, double.infinity),
+      items: <PopupMenuEntry<String>>[
+        PopupMenuItem<String>(
+          child: Center(
+            child: Text(
+              board.name,
+              textAlign: TextAlign.center,
+            ),
+          ),
+          value: 'boardname',
+          enabled: false,
+        ),
+        PopupMenuDivider(height: 0),
+        PopupMenuItem<String>(child: Text('Change Name'), value: 'name'),
+        PopupMenuItem<String>(child: Text('Import Struct'), value: 'import'),
+        PopupMenuItem<String>(child: Text('Export Struct'), value: 'export'),
+      ],
+      elevation: 8.0,
+    );
+  }
+
+  Widget buildBoardWidget(BuildContext context, BoardModel e) {
+    if (e == editTextBoard) {
+      return roundedContainer(
+        child: TextFormField(
+          initialValue: e.name ?? "NewBoard",
+          autofocus: true,
+          onChanged: (value) {
+            setState(() {
+              e.name = value;
+            });
+          },
+          onEditingComplete: () {
+            unSelect();
+          },
+          style: TextStyle(color: nameFontColor, fontSize: 20),
+        ),
+        color: selectedBoard == e ? Colors.red : structTypeColor,
+        borderColor: nameFontColor,
+      );
+    }
     return GestureDetector(
+      onSecondaryTapDown: (TapDownDetails details) {
+        _showPopupMenu(context, details.globalPosition, e).then((value) {
+          if (value == "name") {
+            setState(() {
+              editTextBoard = e;
+              initialName = e.name;
+            });
+          } else if (value == "import") {
+            widget.fileManager.importDataStructure(e).then((value) => setState(() {}));
+          } else if (value == 'export') {
+            widget.fileManager.exportDataStructure(e);
+          }
+        });
+      },
       onTap: () => selectBoard(e),
       child: roundedContainer(
         child: Text(
@@ -101,6 +173,7 @@ class _BoardSelectorState extends State<BoardSelector> {
   }
 
   void selectBoard(BoardModel model) {
+    unSelect();
     widget.selectBoard(model);
     setState(() {
       selectedBoard = model;

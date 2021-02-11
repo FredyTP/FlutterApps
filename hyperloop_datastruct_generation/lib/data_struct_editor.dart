@@ -11,10 +11,10 @@ class DataStructEditor extends StatefulWidget {
   DataStructEditor({Key key, this.variableTree}) : super(key: key);
 
   @override
-  _DataStructEditorState createState() => _DataStructEditorState();
+  DataStructEditorState createState() => DataStructEditorState();
 }
 
-class _DataStructEditorState extends State<DataStructEditor> {
+class DataStructEditorState extends State<DataStructEditor> {
   final Color varTypeColor = Color.fromRGBO(170, 78, 47, 1.0);
   final Color structTypeColor = Color.fromRGBO(71, 74, 117, 1.0);
   final Color varNameColor = Color.fromRGBO(163, 163, 184, 1.0);
@@ -30,31 +30,28 @@ class _DataStructEditorState extends State<DataStructEditor> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => setState(() => unSelect()),
-      child: Container(
-        color: Color.fromRGBO(35, 35, 35, 1.0),
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height,
-        child: Column(
-          children: [
-            buildStructureInfoWidget(),
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage("assets/img/Logo_Hyperloop_UPV-07.png"),
-                    fit: BoxFit.contain,
-                    scale: 0.2,
-                  ),
-                ),
-                child: ListView(
-                  children: generateWidgetTree(context, widget.variableTree.varlist),
+    return Container(
+      color: Color.fromRGBO(35, 35, 35, 1.0),
+      width: MediaQuery.of(context).size.width,
+      height: MediaQuery.of(context).size.height,
+      child: Column(
+        children: [
+          buildStructureInfoWidget(),
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage("assets/img/Logo_Hyperloop_UPV-07.png"),
+                  fit: BoxFit.contain,
+                  scale: 0.2,
                 ),
               ),
+              child: ListView(
+                children: generateWidgetTree(context, widget.variableTree.varlist),
+              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
