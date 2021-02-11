@@ -1,9 +1,13 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:hyperloop_datastruct_generation/Model/BoardModel.dart';
 import 'package:hyperloop_datastruct_generation/file_manager.dart';
+import 'package:reorderables/reorderables.dart';
 
 import 'Model/Boards.dart';
+import 'code/CodeGeneration.dart';
 
 class BoardSelector extends StatefulWidget {
   final Boards boards;
@@ -64,8 +68,20 @@ class BoardSelectorState extends State<BoardSelector> {
             ),
             Expanded(
               child: ListView(
-                children: buildBoardWidgetList(context),
-              ),
+                  children: editTextBoard == null
+                      ? [
+                          ReorderableColumn(
+                            scrollController: ScrollController(),
+                            onReorder: (oldIndex, newIndex) {
+                              setState(() {
+                                final moved = widget.boards.boardlist.removeAt(oldIndex);
+                                widget.boards.boardlist.insert(newIndex, moved);
+                              });
+                            },
+                            children: buildBoardWidgetList(context),
+                          )
+                        ]
+                      : buildBoardWidgetList(context)),
             ),
             FlatButton(
               minWidth: 200,
@@ -89,12 +105,68 @@ class BoardSelectorState extends State<BoardSelector> {
   }
 
   void addNewBoard(BoardModel model) {
+    selectBoard(model);
     editTextBoard = model;
     setState(() => widget.boards.add(model));
   }
 
-  void deleteBoard(BoardModel model) {
-    setState(() => widget.boards.remove(model));
+  void deleteBoard(BoardModel board) {
+    if (selectedBoard == board) {
+      selectBoard(widget.boards.boardlist.first);
+    }
+    setState(() => widget.boards.remove(board));
+    if (widget.boards.boardlist.isEmpty) {
+      selectBoard(null);
+    }
+  }
+
+  void deleteBoardCallback(BuildContext context, BoardModel board) async {
+    if (board.data.size() > 0 || board.data.maxDepth() > 1) {
+      final shouldDelete = await showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                backgroundColor: deleteDialogBGColor,
+                content: Text(
+                  "You are going to delete ${board.name} and all its content (${board.data.numVariables()} elements).\n Do you want to continue?",
+                  style: TextStyle(color: deleteDialogFontColor),
+                ),
+                title: Text(
+                  "Delete Board",
+                  style: TextStyle(color: deleteDialogFontColor),
+                ),
+                elevation: 10,
+                actions: [
+                  RaisedButton(
+                    color: Colors.red,
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text("Delete", style: TextStyle(color: deleteDialogFontColor, fontSize: 17)),
+                    ),
+                  ),
+                  FlatButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text("Cancel", style: TextStyle(color: deleteDialogFontColor, fontSize: 17)),
+                    ),
+                  )
+                ],
+              );
+            },
+          ) ??
+          false;
+      if (shouldDelete) {
+        setState(() {
+          deleteBoard(board);
+        });
+      }
+    } else {
+      setState(() {
+        deleteBoard(board);
+      });
+    }
   }
 
   buildBoardWidgetList(BuildContext context) {
@@ -118,8 +190,12 @@ class BoardSelectorState extends State<BoardSelector> {
         ),
         PopupMenuDivider(height: 0),
         PopupMenuItem<String>(child: Text('Change Name'), value: 'name'),
+        PopupMenuDivider(height: 0),
         PopupMenuItem<String>(child: Text('Import Struct'), value: 'import'),
         PopupMenuItem<String>(child: Text('Export Struct'), value: 'export'),
+        PopupMenuDivider(height: 0),
+        PopupMenuItem<String>(child: Text('Generate Code'), value: 'code'),
+        PopupMenuItem<String>(child: Text('Delete Board', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)), value: 'delete'),
       ],
       elevation: 8.0,
     );
@@ -128,7 +204,9 @@ class BoardSelectorState extends State<BoardSelector> {
   Widget buildBoardWidget(BuildContext context, BoardModel e) {
     if (e == editTextBoard) {
       return roundedContainer(
+        key: ValueKey(e.hashCode),
         child: TextFormField(
+          key: ValueKey(e.name),
           initialValue: e.name ?? "NewBoard",
           autofocus: true,
           onChanged: (value) {
@@ -137,6 +215,7 @@ class BoardSelectorState extends State<BoardSelector> {
             });
           },
           onEditingComplete: () {
+            selectBoard(selectedBoard); //This is just to update all widgets
             unSelect();
           },
           style: TextStyle(color: nameFontColor, fontSize: 20),
@@ -146,6 +225,7 @@ class BoardSelectorState extends State<BoardSelector> {
       );
     }
     return GestureDetector(
+      key: ValueKey(e.hashCode),
       onSecondaryTapDown: (TapDownDetails details) {
         _showPopupMenu(context, details.globalPosition, e).then((value) {
           if (value == "name") {
@@ -155,19 +235,30 @@ class BoardSelectorState extends State<BoardSelector> {
             });
           } else if (value == "import") {
             widget.fileManager.importDataStructure(e).then((value) => setState(() {}));
-          } else if (value == 'export') {
+          } else if (value == "export") {
             widget.fileManager.exportDataStructure(e);
+          } else if (value == "code") {
+            File file = File("${e.name}_${e.data.headnode.name}_generated.js");
+            final codeGen = TSCodeGenerator();
+            file.writeAsString(codeGen.generateCode(e.data.headnode));
+            File filec = File("${e.name}_${e.data.headnode.name}_generated.h");
+            filec.writeAsString(generateCCode(e.data.headnode));
+          } else if (value == "delete") {
+            deleteBoardCallback(context, e);
           }
         });
       },
       onTap: () => selectBoard(e),
-      child: roundedContainer(
-        child: Text(
-          e.name,
-          style: TextStyle(color: nameFontColor, fontSize: 20),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: roundedContainer(
+          child: Text(
+            e.name,
+            style: TextStyle(color: nameFontColor, fontSize: 20),
+          ),
+          color: selectedBoard == e ? Colors.red : structTypeColor,
+          borderColor: nameFontColor,
         ),
-        color: selectedBoard == e ? Colors.red : structTypeColor,
-        borderColor: nameFontColor,
       ),
     );
   }
@@ -180,8 +271,9 @@ class BoardSelectorState extends State<BoardSelector> {
     });
   }
 
-  Widget roundedContainer({Widget child, Color color, Color borderColor = Colors.black, bool border = true}) {
+  Widget roundedContainer({Key key, Widget child, Color color, Color borderColor = Colors.black, bool border = true}) {
     return Container(
+      key: key,
       padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       margin: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       child: child,

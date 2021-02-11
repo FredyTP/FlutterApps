@@ -1,29 +1,32 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:hyperloop_datastruct_generation/Model/BoardModel.dart';
 import 'package:hyperloop_datastruct_generation/Model/variable_tree.dart';
 
 import 'Model/DataType.dart';
 import 'Model/variable.dart';
 
 class DataStructEditor extends StatefulWidget {
+  final BoardModel board;
   final VariableTree variableTree;
-  DataStructEditor({Key key, this.variableTree}) : super(key: key);
+  DataStructEditor({Key key, this.variableTree, this.board}) : super(key: key);
 
   @override
   DataStructEditorState createState() => DataStructEditorState();
 }
 
 class DataStructEditorState extends State<DataStructEditor> {
-  final Color varTypeColor = Color.fromRGBO(170, 78, 47, 1.0);
-  final Color structTypeColor = Color.fromRGBO(71, 74, 117, 1.0);
-  final Color varNameColor = Color.fromRGBO(163, 163, 184, 1.0);
-  final Color lenColor = Color.fromRGBO(218, 218, 226, 1.0);
-  final Color deleteDialogBGColor = Color.fromRGBO(50, 50, 60, 0.95);
-  final Color deleteDialogFontColor = Color.fromRGBO(220, 220, 220, 1);
-  final Color nameFontColor = Color.fromRGBO(230, 230, 232, 1);
-  final Color boxColor = Color.fromRGBO(50, 50, 65, 1);
-  final Color dropdownArrowColor = Color.fromRGBO(163, 163, 184, 1.0);
+  static const Color varTypeColor = Color.fromRGBO(170, 78, 47, 1.0);
+  static const Color structTypeColor = Color.fromRGBO(71, 74, 117, 1.0);
+  static const Color varNameColor = Color.fromRGBO(163, 163, 184, 1.0);
+  static const Color lenColor = Color.fromRGBO(218, 218, 226, 1.0);
+  static const Color deleteDialogBGColor = Color.fromRGBO(50, 50, 60, 0.95);
+  static const Color deleteDialogFontColor = Color.fromRGBO(220, 220, 220, 1);
+  static const Color nameFontColor = Color.fromRGBO(230, 230, 232, 1);
+  static const Color boxColor = Color.fromRGBO(50, 50, 65, 1);
+  static const Color dropdownArrowColor = Color.fromRGBO(163, 163, 184, 1.0);
 
   Variable editingVar;
   DataType lastDataType = DataType.float();
@@ -35,23 +38,27 @@ class DataStructEditorState extends State<DataStructEditor> {
       width: MediaQuery.of(context).size.width,
       height: MediaQuery.of(context).size.height,
       child: Column(
-        children: [
-          buildStructureInfoWidget(),
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage("assets/img/Logo_Hyperloop_UPV-07.png"),
-                  fit: BoxFit.contain,
-                  scale: 0.2,
+        children: widget.board == null
+            ? [
+                buildInfoTextRound(text: "No Board Available", color: varTypeColor, textColor: Colors.white),
+              ]
+            : [
+                buildStructureInfoWidget(),
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage("assets/img/Logo_Hyperloop_UPV-07.png"),
+                        fit: BoxFit.contain,
+                        scale: 0.2,
+                      ),
+                    ),
+                    child: ListView(
+                      children: generateWidgetTree(context, widget.variableTree.varlist),
+                    ),
+                  ),
                 ),
-              ),
-              child: ListView(
-                children: generateWidgetTree(context, widget.variableTree.varlist),
-              ),
-            ),
-          ),
-        ],
+              ],
       ),
     );
   }
@@ -60,14 +67,14 @@ class DataStructEditorState extends State<DataStructEditor> {
     return Color.fromRGBO(230 - 10 * depth, 230 - 7 * depth, 230 - 2 * depth, 1.0);
   }
 
-  Expanded buildInfoTextRound(String text) {
+  Expanded buildInfoTextRound({String text, Color color = lenColor, Color textColor = Colors.black}) {
     return Expanded(
       child: roundedContainer(
         child: Text(
           text,
-          style: TextStyle(color: Colors.black, fontSize: 17),
+          style: TextStyle(color: textColor, fontSize: 16),
         ),
-        color: lenColor,
+        color: color,
       ),
     );
   }
@@ -75,11 +82,20 @@ class DataStructEditorState extends State<DataStructEditor> {
   Container buildStructureInfoWidget() {
     return Container(
       color: Color.fromRGBO(55, 55, 55, 1.0),
-      child: Row(
+      child: Column(
         children: [
-          buildInfoTextRound("Number of Variables: ${widget.variableTree.numVariables()}"),
-          buildInfoTextRound("Structure Size in Bytes: ${widget.variableTree.size()}"),
-          buildInfoTextRound("Structure Max Depth: ${widget.variableTree.maxDepth()}"),
+          Row(
+            children: [
+              buildInfoTextRound(text: "Selected Board: ${widget.board.name}", color: varTypeColor, textColor: Colors.white),
+            ],
+          ),
+          Row(
+            children: [
+              buildInfoTextRound(text: "Number of Variables: ${widget.variableTree.numVariables()}"),
+              buildInfoTextRound(text: "Structure Size: ${widget.variableTree.size()} Byte"),
+              buildInfoTextRound(text: "Structure Max Depth: ${widget.variableTree.maxDepth()}"),
+            ],
+          ),
         ],
       ),
     );
@@ -140,7 +156,7 @@ class DataStructEditorState extends State<DataStructEditor> {
     );
   }
 
-  Widget createVariableWidget(BuildContext context, Variable variable, int depth) {
+  Widget createVariableWidget(BuildContext context, Variable variable, int depth, Variable parent) {
     Widget child;
     Widget children = SizedBox.shrink();
     if (variable.type.type == "struct" && variable.children != null && variable.hide == false) {
@@ -148,14 +164,14 @@ class DataStructEditorState extends State<DataStructEditor> {
         children: variable.children.map<Widget>((element) {
           return Padding(
             padding: const EdgeInsets.only(left: 28.0),
-            child: createVariableWidget(context, element, depth + 1),
+            child: createVariableWidget(context, element, depth + 1, variable),
           );
         }).toList()
           ..add(addNewVariableButton(variable.children)),
       );
     }
     if (editingVar == variable) {
-      child = editVariableWidget(context, variable, children, getDepthColor(depth));
+      child = editVariableWidget(context, variable, children, getDepthColor(depth), parent);
     } else {
       child = variableWidget(context, variable, children, getDepthColor(depth));
     }
@@ -169,45 +185,48 @@ class DataStructEditorState extends State<DataStructEditor> {
             editingVar = variable;
           });
         },
-        child: roundedContainer(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              variable.isStruct()
-                  ? IconButton(
-                      icon: Icon(
-                        variable.hide ? Icons.arrow_forward_outlined : Icons.arrow_downward_outlined,
-                        color: dropdownArrowColor,
-                      ),
-                      onPressed: () => setState(() => variable.hide = !variable.hide),
-                    )
-                  : SizedBox.shrink(),
-              roundedContainer(child: Text(variable.type.type, style: TextStyle(color: nameFontColor)), color: varTypeColor),
-              variable.isStruct() ? roundedContainer(child: Text(variable.structType, style: TextStyle(color: nameFontColor)), color: structTypeColor) : SizedBox.shrink(),
-              roundedContainer(
-                  child: Text(
-                    variable.name,
-                  ),
-                  color: varNameColor),
-              variable != widget.variableTree.headnode ? roundedContainer(child: Text("[${variable.arrayLen.toString()}]"), color: lenColor) : SizedBox.shrink(),
-              variable.isStruct() && variable.hide == true
-                  ? Text(
-                      "${variable.children.length} items",
-                      style: TextStyle(color: nameFontColor),
-                    )
-                  : SizedBox.shrink(),
-              SizedBox(width: 20),
-              variable != widget.variableTree.headnode
-                  ? IconButton(
-                      icon: Transform.rotate(angle: pi / 4, child: Icon(Icons.add_circle, color: Colors.red)),
-                      onPressed: () {
-                        deleteVariableCallback(context, variable);
-                      },
-                    )
-                  : SizedBox.shrink(),
-            ],
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: roundedContainer(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                variable.isStruct()
+                    ? IconButton(
+                        icon: Icon(
+                          variable.hide ? Icons.arrow_forward_outlined : Icons.arrow_downward_outlined,
+                          color: dropdownArrowColor,
+                        ),
+                        onPressed: () => setState(() => variable.hide = !variable.hide),
+                      )
+                    : SizedBox.shrink(),
+                roundedContainer(child: Text(variable.type.type, style: TextStyle(color: nameFontColor)), color: varTypeColor),
+                variable.isStruct() ? roundedContainer(child: Text(variable.structType, style: TextStyle(color: nameFontColor)), color: structTypeColor) : SizedBox.shrink(),
+                roundedContainer(
+                    child: Text(
+                      variable.name,
+                    ),
+                    color: varNameColor),
+                variable != widget.variableTree.headnode ? roundedContainer(child: Text("[${variable.arrayLen.toString()}]"), color: lenColor) : SizedBox.shrink(),
+                variable.isStruct() && variable.hide == true
+                    ? Text(
+                        "${variable.children.length} items",
+                        style: TextStyle(color: nameFontColor),
+                      )
+                    : SizedBox.shrink(),
+                SizedBox(width: 20),
+                variable != widget.variableTree.headnode
+                    ? IconButton(
+                        icon: Transform.rotate(angle: pi / 4, child: Icon(Icons.add_circle, color: Colors.red)),
+                        onPressed: () {
+                          deleteVariableCallback(context, variable);
+                        },
+                      )
+                    : SizedBox.shrink(),
+              ],
+            ),
+            color: boxColor,
           ),
-          color: boxColor,
         ));
     if (variable.isStruct()) {
       return roundedContainer(
@@ -269,7 +288,7 @@ class DataStructEditorState extends State<DataStructEditor> {
     }
   }
 
-  Widget editVariableWidget(BuildContext context, Variable variable, Widget children, Color color) {
+  Widget editVariableWidget(BuildContext context, Variable variable, Widget children, Color color, Variable parent) {
     return roundedContainer(
         child: Container(
           child: Column(
@@ -326,6 +345,40 @@ class DataStructEditorState extends State<DataStructEditor> {
                           )
                         : SizedBox(),
                   ),
+                  variable == widget.variableTree.headnode
+                      ? SizedBox.shrink()
+                      : Column(
+                          children: [
+                            IconButton(
+                                icon: Icon(Icons.arrow_upward_outlined),
+                                iconSize: 20,
+                                onPressed: parent.children.indexOf(variable) > 0
+                                    ? () {
+                                        final index = parent.children.indexOf(variable);
+
+                                        if (index > 0) {
+                                          parent.children.removeAt(index);
+                                          parent.children.insert(index - 1, variable);
+                                        }
+                                        setState(() {});
+                                      }
+                                    : null),
+                            IconButton(
+                                icon: Icon(Icons.arrow_downward_outlined),
+                                iconSize: 20,
+                                onPressed: parent.children.indexOf(variable) < parent.children.length - 1
+                                    ? () {
+                                        final index = parent.children.indexOf(variable);
+
+                                        if (index < parent.children.length - 1) {
+                                          parent.children.removeAt(index);
+                                          parent.children.insert(index + 1, variable);
+                                        }
+                                        setState(() {});
+                                      }
+                                    : null),
+                          ],
+                        ),
                 ],
               ),
               children,
@@ -336,7 +389,10 @@ class DataStructEditorState extends State<DataStructEditor> {
   }
 
   List<Widget> generateWidgetTree(BuildContext context, List<Variable> varlist) {
-    return varlist.map((e) => createVariableWidget(context, e, 0)).toList();
+    return varlist.map((e) => createVariableWidget(context, e, 0, varlist.first)).toList()
+      ..add(SizedBox(
+        height: 300,
+      ));
   }
 
   Widget dataTypeSelector() {

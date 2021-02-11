@@ -87,27 +87,31 @@ class _HomePageState extends State<HomePage> {
           structEditorKey?.currentState?.unSelect();
           boardSelectorKey?.currentState?.unSelect();
         },
-        child: Row(
-          children: [
-            AnimatedContainer(
-              width: showBoards ? 200 : 0,
-              duration: Duration(milliseconds: 300),
-              curve: Curves.easeOutSine,
-              child: BoardSelector(
-                key: boardSelectorKey,
-                boards: boards,
-                selectBoard: this.selectBoard,
-                fileManager: fileManager,
+        child: Container(
+          width: double.infinity,
+          child: Row(
+            children: [
+              AnimatedContainer(
+                width: showBoards ? 200 : 0,
+                duration: Duration(milliseconds: 300),
+                curve: Curves.easeOutSine,
+                child: BoardSelector(
+                  key: boardSelectorKey,
+                  boards: boards,
+                  selectBoard: this.selectBoard,
+                  fileManager: fileManager,
+                ),
               ),
-            ),
-            Expanded(
-              flex: 3,
-              child: DataStructEditor(
-                key: structEditorKey,
-                variableTree: selectedBoard.data,
+              Expanded(
+                flex: 3,
+                child: DataStructEditor(
+                  key: structEditorKey,
+                  board: selectedBoard,
+                  variableTree: selectedBoard?.data,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -121,20 +125,22 @@ class _HomePageState extends State<HomePage> {
     final divider = VerticalDivider(color: barcolor, indent: 10, endIndent: 10);
     final textStyle = TextStyle(fontSize: 15, color: Color.fromRGBO(230, 230, 230, 1.0));
     return [
-      FlatButton(onPressed: loadFile, child: Text("Load Data Structure", style: textStyle)),
+      FlatButton(onPressed: loadFile, child: Text("Load Boards Data", style: textStyle)),
       divider,
-      FlatButton(onPressed: saveFile, child: Text("Save Data Structure", style: textStyle)),
+      FlatButton(onPressed: saveFile, child: Text("Save Boards Data", style: textStyle)),
       divider,
       FlatButton(onPressed: saveGeneratedCode, child: Text("Generate Code", style: textStyle)),
     ];
   }
 
   void saveGeneratedCode() async {
-    File file = File("${selectedBoard.name}_${selectedBoard.data.headnode.name}_generated.js");
-    final codeGen = TSCodeGenerator();
-    await file.writeAsString(codeGen.generateCode(selectedBoard.data.headnode));
-    File filec = File("${selectedBoard.name}_${selectedBoard.data.headnode.name}_generated.h");
-    await filec.writeAsString(generateCCode(selectedBoard.data.headnode));
+    for (final board in boards.boardlist) {
+      File file = File("${board.name}_${board.data.headnode.name}_generated.js");
+      final codeGen = TSCodeGenerator();
+      await file.writeAsString(codeGen.generateCode(board.data.headnode));
+      File filec = File("${board.name}_${board.data.headnode.name}_generated.h");
+      await filec.writeAsString(generateCCode(board.data.headnode));
+    }
   }
 
   void saveFile() async {
@@ -143,7 +149,11 @@ class _HomePageState extends State<HomePage> {
 
   void loadFile() async {
     await fileManager.loadFile(boards);
-    selectedBoard = boards.boardlist.first;
+    if (boards.boardlist.isEmpty) {
+      selectedBoard = null;
+    } else {
+      selectedBoard = boards.boardlist.first;
+    }
     boardSelectorKey.currentState.selectedBoard = selectedBoard;
     setState(() {});
   }

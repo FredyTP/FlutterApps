@@ -5,9 +5,24 @@
  
 #include<stdint.h> 
  
+struct wdasd 
+{
+};
+
+struct asd 
+{
+	struct wdasd 21eqw;
+};
+
+struct tes1 
+{
+	struct asd asdadw;
+};
+
 struct BaseDataStruct 
 {
-	float asdasd;
+	float sda;
+	struct tes1 dasda;
 };
 
 

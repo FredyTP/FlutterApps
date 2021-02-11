@@ -52,6 +52,10 @@ class DataType {
     return DataType._("struct", 0, "parseStruct¿?");
   }
 
+  static DataType enumeration() {
+    return DataType._("enum", 0, DataType.uint8().parseFunc);
+  }
+
   Map<String, dynamic> toMap() {
     return {"type": type, "size": size, "parseFunc": parseFunc};
   }
@@ -69,5 +73,6 @@ class DataType {
     DataType.float(),
     DataType.float64(),
     DataType.struct(),
+    DataType.enumeration(),
   ];
 }
