@@ -53,7 +53,7 @@ class DataType {
   }
 
   static DataType enumeration() {
-    return DataType._("enum", 0, DataType.uint8().parseFunc);
+    return DataType._("enum", 1, DataType.uint8().parseFunc);
   }
 
   Map<String, dynamic> toMap() {

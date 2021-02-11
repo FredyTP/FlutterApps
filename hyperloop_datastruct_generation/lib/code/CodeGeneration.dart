@@ -25,6 +25,8 @@ String recursiveGenerateCCode(List<Variable> varlist, Variable struct) {
     }
     if (vari.isStruct()) {
       code += ("\tstruct " + vari.structType + " " + varname + ";");
+    } else if (vari.isEnum()) {
+      code += ("\tenum " + vari.enumName + " " + varname + ";");
     } else {
       code += ("\t" + vari.type.type + " " + varname + ";");
     }

@@ -202,6 +202,7 @@ class DataStructEditorState extends State<DataStructEditor> {
                     : SizedBox.shrink(),
                 roundedContainer(child: Text(variable.type.type, style: TextStyle(color: nameFontColor)), color: varTypeColor),
                 variable.isStruct() ? roundedContainer(child: Text(variable.structType, style: TextStyle(color: nameFontColor)), color: structTypeColor) : SizedBox.shrink(),
+                variable.isEnum() ? roundedContainer(child: Text(variable.enumName, style: TextStyle(color: nameFontColor)), color: structTypeColor) : SizedBox.shrink(),
                 roundedContainer(
                     child: Text(
                       variable.name,
@@ -295,7 +296,14 @@ class DataStructEditorState extends State<DataStructEditor> {
             children: [
               Row(
                 children: [
-                  roundedContainer(child: dataTypeSelector(), color: varTypeColor),
+                  variable != widget.variableTree.headnode
+                      ? roundedContainer(child: dataTypeSelector(), color: varTypeColor)
+                      : roundedContainer(
+                          child: Text(
+                            variable.type.type,
+                            style: TextStyle(color: nameFontColor),
+                          ),
+                          color: varTypeColor),
                   editingVar.isStruct()
                       ? Expanded(
                           flex: 3,
@@ -310,6 +318,23 @@ class DataStructEditorState extends State<DataStructEditor> {
                               },
                               initialText: variable.structType,
                               labelText: "Struct Type",
+                              color: structTypeColor),
+                        )
+                      : SizedBox.shrink(),
+                  editingVar.isEnum()
+                      ? Expanded(
+                          flex: 3,
+                          child: variableEditField(
+                              light: true,
+                              variable: variable,
+                              onChanged: (value) {
+                                setState(() {
+                                  variable.enumName = value;
+                                  editingVar = variable;
+                                });
+                              },
+                              initialText: variable.enumName,
+                              labelText: "Enum Type",
                               color: structTypeColor),
                         )
                       : SizedBox.shrink(),

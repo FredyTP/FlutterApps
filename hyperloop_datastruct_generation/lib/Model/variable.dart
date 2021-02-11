@@ -15,19 +15,20 @@ class Variable {
   DataType type;
   String name;
   String structType;
+  String enumName;
   int arrayLen;
   bool hide;
   bool selected;
   List<Variable> children = List<Variable>.empty(growable: true);
 
-  Variable({this.type, this.name, this.children, this.structType = "", this.arrayLen = 1, this.hide = false, this.selected = true});
+  Variable({this.type, this.name, this.children, this.structType = "", this.arrayLen = 1, this.hide = false, this.selected = true, this.enumName = ""});
 
   Map<String, dynamic> toMap() {
-    return {"type": type.toMap(), "name": name, "structType": structType, "arrayLen": arrayLen, "selected": selected, "hide": hide, "children": children.map((e) => e.toMap()).toList()};
+    return {"type": type.toMap(), "name": name, "structType": structType, "arrayLen": arrayLen, "selected": selected, "hide": hide, "enumName": enumName, "children": children.map((e) => e.toMap()).toList()};
   }
 
   factory Variable.fromMap(Map<String, dynamic> map) {
-    return Variable(type: DataType.fromMap(map["type"]), name: map["name"], structType: map["structType"], arrayLen: map["arrayLen"], selected: map["selected"] ?? true, hide: map["hide"] ?? false, children: map["children"].map((e) => Variable.fromMap(e)).toList().cast<Variable>());
+    return Variable(type: DataType.fromMap(map["type"]), name: map["name"], structType: map["structType"], arrayLen: map["arrayLen"], enumName: map["enumName"] ?? "", selected: map["selected"] ?? true, hide: map["hide"] ?? false, children: map["children"].map((e) => Variable.fromMap(e)).toList().cast<Variable>());
   }
 
   String toJson() {
@@ -44,6 +45,10 @@ class Variable {
 
   bool isArray() {
     return arrayLen > 1;
+  }
+
+  bool isEnum() {
+    return type.type == "enum";
   }
 
   static int countStructSizeRecursive(List<Variable> varlist, int cont) {
