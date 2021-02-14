@@ -114,6 +114,7 @@ class DataStructEditorState extends State<DataStructEditor> {
   }
 
   Widget variableEditField({Variable variable, void Function(String) onChanged, Color color, String initialText, String labelText, bool light = false, bool autofocus = false}) {
+    print(autofocus);
     return roundedContainer(
       border: false,
       color: color,
@@ -139,7 +140,7 @@ class DataStructEditorState extends State<DataStructEditor> {
             labelText: labelText,
             hintStyle: TextStyle(color: light ? ColorData.nameFontColor : Colors.black),
             labelStyle: TextStyle(color: light ? ColorData.nameFontColor : Colors.black)),
-        cursorColor: Colors.black,
+        cursorColor: light ? ColorData.nameFontColor : Colors.black,
         initialValue: initialText,
         onFieldSubmitted: (value) {
           unSelect();
@@ -293,11 +294,11 @@ class DataStructEditorState extends State<DataStructEditor> {
                   style: TextStyle(color: ColorData.nameFontColor),
                 ),
                 color: ColorData.varTypeColor),
-        editingVar.isStruct()
+        variable.isStruct()
             ? Expanded(
                 flex: 3,
                 child: variableEditField(
-                    autofocus: editingVar.isStruct(),
+                    autofocus: variable.isStruct(),
                     light: true,
                     variable: variable,
                     onChanged: (value) {
@@ -311,11 +312,11 @@ class DataStructEditorState extends State<DataStructEditor> {
                     color: ColorData.structTypeColor),
               )
             : SizedBox.shrink(),
-        editingVar.isEnum()
+        variable.isEnum()
             ? Expanded(
                 flex: 3,
                 child: variableEditField(
-                    autofocus: editingVar.isEnum(),
+                    autofocus: variable.isEnum(),
                     light: true,
                     variable: variable,
                     onChanged: (value) {
@@ -332,8 +333,8 @@ class DataStructEditorState extends State<DataStructEditor> {
         Expanded(
           flex: 3,
           child: variableEditField(
-            autofocus: !(editingVar.isEnum() & editingVar.isStruct()),
             variable: variable,
+            autofocus: (variable.isEnum() == false) && (variable.isStruct() == false),
             onChanged: (value) {
               setState(() {
                 variable.name = value;
