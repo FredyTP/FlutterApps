@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:hyperloop_datastruct_generation/Model/BoardModel.dart';
 import 'package:hyperloop_datastruct_generation/Model/variable_tree.dart';
+import 'package:hyperloop_datastruct_generation/color_data.dart';
 
 import 'Model/DataType.dart';
 import 'Model/variable.dart';
@@ -18,16 +19,6 @@ class DataStructEditor extends StatefulWidget {
 }
 
 class DataStructEditorState extends State<DataStructEditor> {
-  static const Color varTypeColor = Color.fromRGBO(170, 78, 47, 1.0);
-  static const Color structTypeColor = Color.fromRGBO(71, 74, 117, 1.0);
-  static const Color varNameColor = Color.fromRGBO(163, 163, 184, 1.0);
-  static const Color lenColor = Color.fromRGBO(218, 218, 226, 1.0);
-  static const Color deleteDialogBGColor = Color.fromRGBO(50, 50, 60, 0.95);
-  static const Color deleteDialogFontColor = Color.fromRGBO(220, 220, 220, 1);
-  static const Color nameFontColor = Color.fromRGBO(230, 230, 232, 1);
-  static const Color boxColor = Color.fromRGBO(50, 50, 65, 1);
-  static const Color dropdownArrowColor = Color.fromRGBO(163, 163, 184, 1.0);
-
   Variable editingVar;
   DataType lastDataType = DataType.float();
 
@@ -40,7 +31,7 @@ class DataStructEditorState extends State<DataStructEditor> {
       child: Column(
         children: widget.board == null
             ? [
-                buildInfoTextRound(text: "No Board Available", color: varTypeColor, textColor: Colors.white),
+                buildInfoTextRound(text: "No Board Available", color: ColorData.varTypeColor, textColor: Colors.white),
               ]
             : [
                 buildStructureInfoWidget(),
@@ -67,7 +58,7 @@ class DataStructEditorState extends State<DataStructEditor> {
     return Color.fromRGBO(230 - 10 * depth, 230 - 7 * depth, 230 - 2 * depth, 1.0);
   }
 
-  Expanded buildInfoTextRound({String text, Color color = lenColor, Color textColor = Colors.black}) {
+  Expanded buildInfoTextRound({String text, Color color = ColorData.lenColor, Color textColor = Colors.black}) {
     return Expanded(
       child: roundedContainer(
         child: Text(
@@ -86,7 +77,7 @@ class DataStructEditorState extends State<DataStructEditor> {
         children: [
           Row(
             children: [
-              buildInfoTextRound(text: "Selected Board: ${widget.board.name}", color: varTypeColor, textColor: Colors.white),
+              buildInfoTextRound(text: "Selected Board: ${widget.board.name}", color: ColorData.varTypeColor, textColor: Colors.white),
             ],
           ),
           Row(
@@ -122,12 +113,13 @@ class DataStructEditorState extends State<DataStructEditor> {
         label: Text(""));
   }
 
-  Widget variableEditField({Variable variable, void Function(String) onChanged, Color color, String initialText, String labelText, bool light = false}) {
+  Widget variableEditField({Variable variable, void Function(String) onChanged, Color color, String initialText, String labelText, bool light = false, bool autofocus = false}) {
     return roundedContainer(
       border: false,
       color: color,
       child: TextFormField(
-        style: TextStyle(color: light ? nameFontColor : Colors.black),
+        autofocus: autofocus,
+        style: TextStyle(color: light ? ColorData.nameFontColor : Colors.black),
         decoration: InputDecoration(
             filled: true,
             fillColor: color,
@@ -138,14 +130,15 @@ class DataStructEditorState extends State<DataStructEditor> {
               ),
             ),
             focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: light ? nameFontColor : Colors.black, width: 1),
+              borderSide: BorderSide(color: light ? ColorData.nameFontColor : Colors.black, width: 1),
               borderRadius: BorderRadius.all(
                 Radius.circular(10.0),
               ),
             ),
             hintText: labelText,
             labelText: labelText,
-            labelStyle: TextStyle(color: light ? nameFontColor : Colors.black)),
+            hintStyle: TextStyle(color: light ? ColorData.nameFontColor : Colors.black),
+            labelStyle: TextStyle(color: light ? ColorData.nameFontColor : Colors.black)),
         cursorColor: Colors.black,
         initialValue: initialText,
         onFieldSubmitted: (value) {
@@ -195,24 +188,24 @@ class DataStructEditorState extends State<DataStructEditor> {
                     ? IconButton(
                         icon: Icon(
                           variable.hide ? Icons.arrow_forward_outlined : Icons.arrow_downward_outlined,
-                          color: dropdownArrowColor,
+                          color: ColorData.dropdownArrowColor,
                         ),
                         onPressed: () => setState(() => variable.hide = !variable.hide),
                       )
                     : SizedBox.shrink(),
-                roundedContainer(child: Text(variable.type.type, style: TextStyle(color: nameFontColor)), color: varTypeColor),
-                variable.isStruct() ? roundedContainer(child: Text(variable.structType, style: TextStyle(color: nameFontColor)), color: structTypeColor) : SizedBox.shrink(),
-                variable.isEnum() ? roundedContainer(child: Text(variable.enumName, style: TextStyle(color: nameFontColor)), color: structTypeColor) : SizedBox.shrink(),
+                roundedContainer(child: Text(variable.type.type, style: TextStyle(color: ColorData.nameFontColor)), color: ColorData.varTypeColor),
+                variable.isStruct() ? roundedContainer(child: Text(variable.structType, style: TextStyle(color: ColorData.nameFontColor)), color: ColorData.structTypeColor) : SizedBox.shrink(),
+                variable.isEnum() ? roundedContainer(child: Text(variable.enumName, style: TextStyle(color: ColorData.nameFontColor)), color: ColorData.structTypeColor) : SizedBox.shrink(),
                 roundedContainer(
                     child: Text(
                       variable.name,
                     ),
-                    color: varNameColor),
-                variable != widget.variableTree.headnode ? roundedContainer(child: Text("[${variable.arrayLen.toString()}]"), color: lenColor) : SizedBox.shrink(),
+                    color: ColorData.varNameColor),
+                variable != widget.variableTree.headnode ? roundedContainer(child: Text("[${variable.arrayLen.toString()}]"), color: ColorData.lenColor) : SizedBox.shrink(),
                 variable.isStruct() && variable.hide == true
                     ? Text(
                         "${variable.children.length} items",
-                        style: TextStyle(color: nameFontColor),
+                        style: TextStyle(color: ColorData.nameFontColor),
                       )
                     : SizedBox.shrink(),
                 SizedBox(width: 20),
@@ -226,7 +219,7 @@ class DataStructEditorState extends State<DataStructEditor> {
                     : SizedBox.shrink(),
               ],
             ),
-            color: boxColor,
+            color: ColorData.boxColor,
           ),
         ));
     if (variable.isStruct()) {
@@ -246,14 +239,14 @@ class DataStructEditorState extends State<DataStructEditor> {
             context: context,
             builder: (context) {
               return AlertDialog(
-                backgroundColor: deleteDialogBGColor,
+                backgroundColor: ColorData.deleteDialogBGColor,
                 content: Text(
                   "You are going to delete ${variable.name} and all its content (${Variable.numVariables(variable.children, 0)} elements).\n Do you want to continue?",
-                  style: TextStyle(color: deleteDialogFontColor),
+                  style: TextStyle(color: ColorData.deleteDialogFontColor),
                 ),
                 title: Text(
                   "Delete Struct",
-                  style: TextStyle(color: deleteDialogFontColor),
+                  style: TextStyle(color: ColorData.deleteDialogFontColor),
                 ),
                 elevation: 10,
                 actions: [
@@ -262,14 +255,14 @@ class DataStructEditorState extends State<DataStructEditor> {
                     onPressed: () => Navigator.of(context).pop(true),
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Text("Delete", style: TextStyle(color: deleteDialogFontColor, fontSize: 17)),
+                      child: Text("Delete", style: TextStyle(color: ColorData.deleteDialogFontColor, fontSize: 17)),
                     ),
                   ),
                   FlatButton(
                     onPressed: () => Navigator.of(context).pop(false),
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Text("Cancel", style: TextStyle(color: deleteDialogFontColor, fontSize: 17)),
+                      child: Text("Cancel", style: TextStyle(color: ColorData.deleteDialogFontColor, fontSize: 17)),
                     ),
                   )
                 ],
@@ -290,127 +283,132 @@ class DataStructEditorState extends State<DataStructEditor> {
   }
 
   Widget editVariableWidget(BuildContext context, Variable variable, Widget children, Color color, Variable parent) {
+    final editwidget = Row(
+      children: [
+        variable != widget.variableTree.headnode
+            ? roundedContainer(child: dataTypeSelector(), color: ColorData.varTypeColor)
+            : roundedContainer(
+                child: Text(
+                  variable.type.type,
+                  style: TextStyle(color: ColorData.nameFontColor),
+                ),
+                color: ColorData.varTypeColor),
+        editingVar.isStruct()
+            ? Expanded(
+                flex: 3,
+                child: variableEditField(
+                    autofocus: editingVar.isStruct(),
+                    light: true,
+                    variable: variable,
+                    onChanged: (value) {
+                      setState(() {
+                        variable.structType = value;
+                        editingVar = variable;
+                      });
+                    },
+                    initialText: variable.structType,
+                    labelText: "Struct Type",
+                    color: ColorData.structTypeColor),
+              )
+            : SizedBox.shrink(),
+        editingVar.isEnum()
+            ? Expanded(
+                flex: 3,
+                child: variableEditField(
+                    autofocus: editingVar.isEnum(),
+                    light: true,
+                    variable: variable,
+                    onChanged: (value) {
+                      setState(() {
+                        variable.enumName = value;
+                        editingVar = variable;
+                      });
+                    },
+                    initialText: variable.enumName,
+                    labelText: "Enum Type",
+                    color: ColorData.structTypeColor),
+              )
+            : SizedBox.shrink(),
+        Expanded(
+          flex: 3,
+          child: variableEditField(
+            autofocus: !(editingVar.isEnum() & editingVar.isStruct()),
+            variable: variable,
+            onChanged: (value) {
+              setState(() {
+                variable.name = value;
+                editingVar = variable;
+              });
+            },
+            initialText: variable.name,
+            labelText: "Variable Name",
+            color: ColorData.varNameColor,
+          ),
+        ),
+        Expanded(
+          flex: 3,
+          child: variable != widget.variableTree.headnode
+              ? variableEditField(
+                  variable: variable,
+                  onChanged: (value) {
+                    setState(() {
+                      variable.arrayLen = int.tryParse(value) ?? 1;
+                      editingVar = variable;
+                    });
+                  },
+                  labelText: "Array Lenght",
+                  initialText: variable.arrayLen.toString(),
+                  color: ColorData.lenColor,
+                )
+              : SizedBox(),
+        ),
+        variable == widget.variableTree.headnode
+            ? SizedBox.shrink()
+            : Column(
+                children: [
+                  IconButton(
+                      icon: Icon(Icons.arrow_upward_outlined),
+                      iconSize: 20,
+                      onPressed: parent.children.indexOf(variable) > 0
+                          ? () {
+                              final index = parent.children.indexOf(variable);
+
+                              if (index > 0) {
+                                parent.children.removeAt(index);
+                                parent.children.insert(index - 1, variable);
+                              }
+                              setState(() {});
+                            }
+                          : null),
+                  IconButton(
+                      icon: Icon(Icons.arrow_downward_outlined),
+                      iconSize: 20,
+                      onPressed: parent.children.indexOf(variable) < parent.children.length - 1
+                          ? () {
+                              final index = parent.children.indexOf(variable);
+
+                              if (index < parent.children.length - 1) {
+                                parent.children.removeAt(index);
+                                parent.children.insert(index + 1, variable);
+                              }
+                              setState(() {});
+                            }
+                          : null),
+                ],
+              ),
+      ],
+    );
+    final selectedColor = ColorData.boxSelectedColor;
     return roundedContainer(
         child: Container(
           child: Column(
             children: [
-              Row(
-                children: [
-                  variable != widget.variableTree.headnode
-                      ? roundedContainer(child: dataTypeSelector(), color: varTypeColor)
-                      : roundedContainer(
-                          child: Text(
-                            variable.type.type,
-                            style: TextStyle(color: nameFontColor),
-                          ),
-                          color: varTypeColor),
-                  editingVar.isStruct()
-                      ? Expanded(
-                          flex: 3,
-                          child: variableEditField(
-                              light: true,
-                              variable: variable,
-                              onChanged: (value) {
-                                setState(() {
-                                  variable.structType = value;
-                                  editingVar = variable;
-                                });
-                              },
-                              initialText: variable.structType,
-                              labelText: "Struct Type",
-                              color: structTypeColor),
-                        )
-                      : SizedBox.shrink(),
-                  editingVar.isEnum()
-                      ? Expanded(
-                          flex: 3,
-                          child: variableEditField(
-                              light: true,
-                              variable: variable,
-                              onChanged: (value) {
-                                setState(() {
-                                  variable.enumName = value;
-                                  editingVar = variable;
-                                });
-                              },
-                              initialText: variable.enumName,
-                              labelText: "Enum Type",
-                              color: structTypeColor),
-                        )
-                      : SizedBox.shrink(),
-                  Expanded(
-                    flex: 3,
-                    child: variableEditField(
-                      variable: variable,
-                      onChanged: (value) {
-                        setState(() {
-                          variable.name = value;
-                          editingVar = variable;
-                        });
-                      },
-                      initialText: variable.name,
-                      labelText: "Variable Name",
-                      color: varNameColor,
-                    ),
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: variable != widget.variableTree.headnode
-                        ? variableEditField(
-                            variable: variable,
-                            onChanged: (value) {
-                              setState(() {
-                                variable.arrayLen = int.tryParse(value) ?? 1;
-                                editingVar = variable;
-                              });
-                            },
-                            labelText: "Array Lenght",
-                            initialText: variable.arrayLen.toString(),
-                            color: lenColor,
-                          )
-                        : SizedBox(),
-                  ),
-                  variable == widget.variableTree.headnode
-                      ? SizedBox.shrink()
-                      : Column(
-                          children: [
-                            IconButton(
-                                icon: Icon(Icons.arrow_upward_outlined),
-                                iconSize: 20,
-                                onPressed: parent.children.indexOf(variable) > 0
-                                    ? () {
-                                        final index = parent.children.indexOf(variable);
-
-                                        if (index > 0) {
-                                          parent.children.removeAt(index);
-                                          parent.children.insert(index - 1, variable);
-                                        }
-                                        setState(() {});
-                                      }
-                                    : null),
-                            IconButton(
-                                icon: Icon(Icons.arrow_downward_outlined),
-                                iconSize: 20,
-                                onPressed: parent.children.indexOf(variable) < parent.children.length - 1
-                                    ? () {
-                                        final index = parent.children.indexOf(variable);
-
-                                        if (index < parent.children.length - 1) {
-                                          parent.children.removeAt(index);
-                                          parent.children.insert(index + 1, variable);
-                                        }
-                                        setState(() {});
-                                      }
-                                    : null),
-                          ],
-                        ),
-                ],
-              ),
+              variable.isStruct() ? roundedContainer(child: editwidget, color: selectedColor) : editwidget,
               children,
             ],
           ),
         ),
-        color: color);
+        color: variable.isStruct() ? color : selectedColor);
   }
 
   List<Widget> generateWidgetTree(BuildContext context, List<Variable> varlist) {
@@ -425,11 +423,11 @@ class DataStructEditorState extends State<DataStructEditor> {
       icon: Icon(
         // Add this
         Icons.arrow_drop_down, // Add this
-        color: nameFontColor, // Add this
+        color: ColorData.nameFontColor, // Add this
       ),
       focusColor: Colors.black,
-      style: TextStyle(color: nameFontColor, fontSize: 17),
-      dropdownColor: varTypeColor,
+      style: TextStyle(color: ColorData.nameFontColor, fontSize: 17),
+      dropdownColor: ColorData.varTypeColor,
       items: DataType.dataTypes
           .map((e) => DropdownMenuItem(
                 child: Text(e.type),

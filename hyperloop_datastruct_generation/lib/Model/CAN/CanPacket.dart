@@ -13,9 +13,6 @@ class CanPacket {
   CanPacket();
   CanPacket.manual({this.id, this.idMacro, this.len, this.varList});
 
-/**
- * Adds a new variable to the struct and return true if was succesfully added, otherwise false.
- */
   bool addVariable(CanVariable vari) {
     if (vari.transDataType.size + len > maxlen) {
       return false;
