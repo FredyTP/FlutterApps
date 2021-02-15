@@ -15,6 +15,7 @@ import 'package:hyperloop_datastruct_generation/custom_popup_divider.dart';
 
 import 'package:hyperloop_datastruct_generation/data_struct_editor.dart';
 import 'package:hyperloop_datastruct_generation/file_manager.dart';
+import 'package:hyperloop_datastruct_generation/widget/menu_item.dart';
 
 import 'Model/Boards.dart';
 import 'board_selector.dart';
@@ -153,6 +154,66 @@ class _HomePageState extends State<HomePage> {
     final textStyle = TextStyle(fontSize: 15, color: Color.fromRGBO(230, 230, 230, 1.0));
     final titleStyle = TextStyle(fontSize: 20, color: Color.fromRGBO(230, 230, 230, 1.0));
     return [
+      Container(
+        child: MenuItem(
+          crossAxisAligment: CrossAxisAlignment.center,
+          menuColor: ColorData.varTypeColor,
+          direction: MenuDirection.bottom,
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+            color: ColorData.bgColor,
+            child: Text(
+              "FILE",
+              style: textStyle,
+            ),
+          ),
+          items: [
+            MenuItem(
+              child: Container(
+                alignment: AlignmentDirectional.centerStart,
+                padding: EdgeInsets.all(10),
+                color: ColorData.varTypeColor,
+                child: Text(
+                  "New Project",
+                  style: textStyle,
+                ),
+              ),
+            ),
+            Center(child: Container(height: 1, width: 200, color: Colors.white)),
+            MenuItem(
+              child: Container(
+                padding: EdgeInsets.all(10),
+                color: ColorData.varTypeColor,
+                child: Text(
+                  "Open Project",
+                  style: textStyle,
+                ),
+              ),
+            ),
+            MenuItem(
+              child: Container(
+                padding: EdgeInsets.all(10),
+                color: ColorData.varTypeColor,
+                child: Text(
+                  "Save Project",
+                  style: textStyle,
+                ),
+              ),
+            ),
+            MenuItem(
+              child: Container(
+                padding: EdgeInsets.all(10),
+                color: ColorData.varTypeColor,
+                child: Text(
+                  "Save Project As",
+                  style: textStyle,
+                ),
+              ),
+            )
+          ],
+        ),
+      ),
+      divider,
       PopupMenuButton<String>(
         color: ColorData.bgColor,
         elevation: 10,
