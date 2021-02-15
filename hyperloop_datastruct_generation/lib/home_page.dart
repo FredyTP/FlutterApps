@@ -9,6 +9,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:hyperloop_datastruct_generation/Model/BoardModel.dart';
+import 'package:hyperloop_datastruct_generation/Model/project_model.dart';
+import 'package:hyperloop_datastruct_generation/color_data.dart';
+import 'package:hyperloop_datastruct_generation/custom_popup_divider.dart';
 
 import 'package:hyperloop_datastruct_generation/data_struct_editor.dart';
 import 'package:hyperloop_datastruct_generation/file_manager.dart';
@@ -25,11 +28,11 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final Boards boards = Boards(boardlist: [BoardModel(name: "MASTER")]);
   final boardSelectorKey = GlobalKey<BoardSelectorState>();
   final structEditorKey = GlobalKey<DataStructEditorState>();
   BoardModel selectedBoard;
   FileManager fileManager;
+  final ProjectModel project = ProjectModel.empty();
 
   //-------COLORS----------//
   final Color varTypeColor = Color.fromRGBO(170, 78, 47, 1.0);
@@ -45,10 +48,12 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    selectedBoard = boards.boardlist.first;
+
     fileManager = FileManager(
+      project: project,
       onLoadData: () => setState(() {}),
     );
+    newProject();
   }
 
   void selectBoard(BoardModel model) {
@@ -80,7 +85,7 @@ class _HomePageState extends State<HomePage> {
           ),
           Image.asset("assets/img/Logo_Hyperloop_UPV-27.png"),
         ])),
-        actions: appBarActions(),
+        actions: appBarActions(context),
       ),
       body: GestureDetector(
         onTap: () {
@@ -97,17 +102,34 @@ class _HomePageState extends State<HomePage> {
                 curve: Curves.easeOutSine,
                 child: BoardSelector(
                   key: boardSelectorKey,
-                  boards: boards,
+                  boards: project.boards,
                   selectBoard: this.selectBoard,
                   fileManager: fileManager,
                 ),
               ),
               Expanded(
                 flex: 3,
-                child: DataStructEditor(
-                  key: structEditorKey,
-                  board: selectedBoard,
-                  variableTree: selectedBoard?.data,
+                child: Column(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(3),
+                      width: double.infinity,
+                      color: ColorData.bgColor,
+                      child: Center(
+                        child: Text(
+                          fileManager.isOpen ? "Current Project: ${project.file.path}" : "No project Open",
+                          style: TextStyle(color: ColorData.nameFontColor),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: DataStructEditor(
+                        key: structEditorKey,
+                        board: selectedBoard,
+                        variableTree: selectedBoard?.data,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -120,41 +142,289 @@ class _HomePageState extends State<HomePage> {
 //-----------STRUCTURE USEFUL INFORMATION-----------//
 
 //----------------APPBAR---------------//
-  List<Widget> appBarActions() {
+  List<Widget> appBarActions(BuildContext context) {
     final barcolor = Color.fromRGBO(150, 150, 150, 1.0);
-    final divider = VerticalDivider(color: barcolor, indent: 10, endIndent: 10);
+    final divider = VerticalDivider(
+      color: barcolor,
+      indent: 10,
+      endIndent: 10,
+      width: 30,
+    );
     final textStyle = TextStyle(fontSize: 15, color: Color.fromRGBO(230, 230, 230, 1.0));
+    final titleStyle = TextStyle(fontSize: 20, color: Color.fromRGBO(230, 230, 230, 1.0));
     return [
-      FlatButton(onPressed: loadFile, child: Text("Load Boards Data", style: textStyle)),
+      PopupMenuButton<String>(
+        color: ColorData.bgColor,
+        elevation: 10,
+        onSelected: (value) {
+          if (value == "New Project") {
+            showDialog<bool>(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  backgroundColor: ColorData.bgColor,
+                  title: Text(
+                    "Do you want to save this project?",
+                    style: titleStyle,
+                  ),
+                  actionsPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  actions: [
+                    FlatButton(
+                      color: Colors.green,
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: Text("Yes"),
+                    ),
+                    FlatButton(
+                      color: ColorData.varTypeColor,
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: Text("No"),
+                    ),
+                    FlatButton(
+                      onPressed: () => Navigator.of(context).pop(null),
+                      child: Text("Cancel"),
+                    ),
+                  ],
+                );
+              },
+            ).then((value) async {
+              if (value == null) {
+                return;
+              } else if (value == true) {
+                saveProject().then((value) => fileManager.isOpen ? newProject() : 0);
+              } else {
+                newProject();
+              }
+            });
+          } else if (value == "Open Project") {
+            openProject();
+          } else if (value == "Save Project") {
+            saveProject();
+          } else if (value == "Save Project As") {
+            saveProjectAs();
+          }
+        },
+        child: Center(child: Text("FILE", style: textStyle)),
+        tooltip: "File options",
+        itemBuilder: (context) {
+          final popupDivider = CustomPopupMenuDivider(
+            height: 3,
+            indent: 10,
+            endIndent: 10,
+            color: barcolor,
+          );
+          return [
+            PopupMenuItem<String>(
+              value: "New Project",
+              child: Text("New Project", style: textStyle),
+            ),
+            popupDivider,
+            PopupMenuItem<String>(
+              value: "Open Project",
+              child: Text("Open Project", style: textStyle),
+            ),
+            popupDivider,
+            PopupMenuItem<String>(
+              value: "Save Project",
+              child: Text("Save Project", style: textStyle),
+            ),
+            popupDivider,
+            PopupMenuItem<String>(
+              value: "Save Project As",
+              child: Text("Save Project As", style: textStyle),
+            ),
+          ];
+        },
+      ),
       divider,
-      FlatButton(onPressed: saveFile, child: Text("Save Boards Data", style: textStyle)),
+      PopupMenuButton<String>(
+        color: ColorData.bgColor,
+        elevation: 10,
+        onSelected: (value) {
+          if (value == "Configuration") {
+            showDialog(
+              context: context,
+              builder: (context) {
+                return buildConfigDialog(context, project);
+              },
+            );
+          } else if (value == "Info") {
+            showAboutDialog(
+                context: context,
+                applicationName: "Hyperloop DataStruct Generator",
+                applicationIcon: Image.asset(
+                  "assets/img/Logo_Hyperloop_UPV-07.png",
+                  height: 100,
+                  color: ColorData.bgColor,
+                ));
+          }
+        },
+        child: Center(child: Text("PROJECT", style: textStyle)),
+        tooltip: "File options",
+        itemBuilder: (context) {
+          final popupDivider = CustomPopupMenuDivider(
+            height: 3,
+            indent: 10,
+            endIndent: 10,
+            color: barcolor,
+          );
+          return [
+            PopupMenuItem<String>(
+              value: "Configuration",
+              child: Text("Configuration", style: textStyle),
+            ),
+            popupDivider,
+            PopupMenuItem<String>(
+              value: "Info",
+              child: Text("Info", style: textStyle),
+            ),
+          ];
+        },
+      ),
       divider,
-      FlatButton(onPressed: saveGeneratedCode, child: Text("Generate Code", style: textStyle)),
+      FlatButton(onPressed: saveCode, child: Text("GENERATE CODE", style: textStyle)),
     ];
   }
 
-  void saveGeneratedCode() async {
-    for (final board in boards.boardlist) {
-      File file = File("${board.name}_${board.data.headnode.name}_generated.js");
+  Widget buildConfigDialog(BuildContext context, ProjectModel projectModel) {
+    final size = MediaQuery.of(context).size;
+    final textStyle = TextStyle(color: ColorData.nameFontColor);
+    return Dialog(
+      backgroundColor: ColorData.bgColor,
+      child: Container(
+        width: size.width * 0.7,
+        height: size.height * 0.7,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+                padding: EdgeInsets.all(20),
+                child: Text(
+                  "CONFIGURATION (Not Ready)",
+                  style: TextStyle(color: ColorData.nameFontColor, fontSize: 28),
+                )),
+            Divider(
+              height: 0,
+              indent: size.width * 0.04,
+              endIndent: size.width * 0.04,
+              color: ColorData.nameFontColor,
+            ),
+            Expanded(
+              child: Container(
+                  child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: [
+                        roundedBoxContainer(
+                            child: SwitchListTile(
+                              title: Text(
+                                "C/C++ Machine BigEndian",
+                                style: textStyle,
+                              ),
+                              activeColor: ColorData.varTypeColor,
+                              value: true,
+                              onChanged: (_) {},
+                            ),
+                            color: ColorData.boxColor,
+                            margin: EdgeInsets.only(top: 10, left: 10, right: 10)),
+                        roundedBoxContainer(
+                            child: SwitchListTile(
+                              title: Text(
+                                "TypeScript Machine BigEndian",
+                                style: textStyle,
+                              ),
+                              activeColor: ColorData.varTypeColor,
+                              value: false,
+                              onChanged: (_) {},
+                            ),
+                            color: ColorData.boxColor,
+                            margin: EdgeInsets.only(top: 10, left: 10, right: 10)),
+                        roundedBoxContainer(
+                            child: SwitchListTile(
+                              title: Text(
+                                "Is C++ Code?",
+                                style: textStyle,
+                              ),
+                              activeColor: ColorData.varTypeColor,
+                              value: true,
+                              onChanged: (_) {},
+                            ),
+                            color: ColorData.boxColor,
+                            margin: EdgeInsets.only(top: 10, left: 10, right: 10)),
+                      ],
+                    ),
+                  ),
+                  VerticalDivider(
+                    indent: size.height * 0.02,
+                    endIndent: size.height * 0.02,
+                    width: 0,
+                    color: ColorData.nameFontColor,
+                  ),
+                  Expanded(
+                    child: Column(),
+                  )
+                ],
+              )),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget roundedBoxContainer({Widget child, Color color, bool hasBorder = false, TextStyle textStyle, double radius, EdgeInsets margin}) {
+    return Container(
+      margin: margin,
+      decoration: BoxDecoration(border: hasBorder ? Border.all() : null, color: color, borderRadius: BorderRadius.circular(10)),
+      child: child,
+    );
+  }
+
+  Future saveCode() async {
+    if (fileManager.isOpen) {
+      return await saveGeneratedCode(project.file.parent.path);
+    } else {
+      return await saveProject().then((value) => value == 0 ? saveGeneratedCode(project.file.parent.path) : 0);
+    }
+  }
+
+  Future saveGeneratedCode(String folder) async {
+    for (final board in project.boards.boardlist) {
+      File file = File("$folder\\${board.name}_${board.data.headnode.name}_generated.js");
       final codeGen = TSCodeGenerator();
       await file.writeAsString(codeGen.generateCode(board.data.headnode));
-      File filec = File("${board.name}_${board.data.headnode.name}_generated.h");
+      File filec = File("$folder\\${board.name}_${board.data.headnode.name}_generated.h");
       await filec.writeAsString(generateCCode(board.data.headnode));
     }
   }
 
-  void saveFile() async {
-    await fileManager.saveFile(boards);
+  Future<int> saveProject() async {
+    final result = await fileManager.saveProject();
+    setState(() {});
+    return result;
   }
 
-  void loadFile() async {
-    await fileManager.loadFile(boards);
-    if (boards.boardlist.isEmpty) {
+  void saveProjectAs() async {
+    await fileManager.saveProjectAs();
+    setState(() {});
+  }
+
+  void openProject() async {
+    final result = await fileManager.openProject();
+    if (result < 0) return; //Error loading project
+    if (project.boards.boardlist.isEmpty) {
       selectedBoard = null;
     } else {
-      selectedBoard = boards.boardlist.first;
+      selectedBoard = project.boards.boardlist.first;
     }
     boardSelectorKey.currentState.selectedBoard = selectedBoard;
+    setState(() {});
+  }
+
+  void newProject() {
+    fileManager.newProject();
+    selectedBoard = fileManager.project.boards.boardlist.first;
+    boardSelectorKey?.currentState?.selectedBoard = selectedBoard;
     setState(() {});
   }
 

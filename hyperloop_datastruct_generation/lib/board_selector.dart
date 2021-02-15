@@ -2,12 +2,15 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:hyperloop_datastruct_generation/Model/BoardModel.dart';
+import 'package:hyperloop_datastruct_generation/color_data.dart';
 import 'package:hyperloop_datastruct_generation/file_manager.dart';
 import 'package:reorderables/reorderables.dart';
 
 import 'Model/Boards.dart';
 import 'code/CodeGeneration.dart';
+import 'custom_popup_divider.dart';
 
 class BoardSelector extends StatefulWidget {
   final Boards boards;
@@ -40,7 +43,7 @@ class BoardSelectorState extends State<BoardSelector> {
   @override
   void initState() {
     super.initState();
-    selectedBoard = widget.boards.boardlist.first;
+    selectedBoard = widget.boards?.boardlist?.first ?? null;
   }
 
   @override
@@ -174,28 +177,40 @@ class BoardSelectorState extends State<BoardSelector> {
   }
 
   Future<String> _showPopupMenu(BuildContext context, Offset offset, BoardModel board) async {
+    final textStyle = TextStyle(fontSize: 16, color: Color.fromRGBO(230, 230, 230, 1.0), fontFamily: GoogleFonts.robotoSlab().fontFamily);
+    final titleTextStyle = TextStyle(fontSize: 19, color: Color.fromRGBO(255, 255, 255, 1.0), fontFamily: GoogleFonts.robotoSlab().fontFamily);
+    final deleteTextStyle = TextStyle(fontSize: 16, color: Colors.red, fontFamily: GoogleFonts.robotoSlab().fontFamily, fontWeight: FontWeight.bold);
+    final barcolor = Color.fromRGBO(150, 150, 150, 1.0);
+    final popupDivider = CustomPopupMenuDivider(
+      height: 3,
+      indent: 10,
+      endIndent: 10,
+      color: barcolor,
+    );
     return await showMenu(
+      color: ColorData.bgColor,
       context: context,
       position: RelativeRect.fromLTRB(offset.dx, offset.dy, double.infinity, double.infinity),
       items: <PopupMenuEntry<String>>[
-        PopupMenuItem<String>(
-          child: Center(
+        PopUpMenuChild(
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 4, vertical: 5),
             child: Text(
               board.name,
               textAlign: TextAlign.center,
+              style: titleTextStyle,
             ),
           ),
-          value: 'boardname',
-          enabled: false,
         ),
-        PopupMenuDivider(height: 0),
-        PopupMenuItem<String>(child: Text('Change Name'), value: 'name'),
-        PopupMenuDivider(height: 0),
-        PopupMenuItem<String>(child: Text('Import Struct'), value: 'import'),
-        PopupMenuItem<String>(child: Text('Export Struct'), value: 'export'),
-        PopupMenuDivider(height: 0),
-        PopupMenuItem<String>(child: Text('Generate Code'), value: 'code'),
-        PopupMenuItem<String>(child: Text('Delete Board', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)), value: 'delete'),
+        popupDivider,
+        PopupMenuItem<String>(child: Text('Change Name'), textStyle: textStyle, value: 'name'),
+        popupDivider,
+        PopupMenuItem<String>(child: Text('Import Struct'), textStyle: textStyle, value: 'import'),
+        PopupMenuItem<String>(child: Text('Export Struct'), textStyle: textStyle, value: 'export'),
+        popupDivider,
+        PopupMenuItem<String>(child: Text('Generate Code'), textStyle: textStyle, value: 'code'),
+        popupDivider,
+        PopupMenuItem<String>(child: Text('Delete Board'), textStyle: deleteTextStyle, value: 'delete'),
       ],
       elevation: 8.0,
     );
@@ -238,11 +253,11 @@ class BoardSelectorState extends State<BoardSelector> {
           } else if (value == "export") {
             widget.fileManager.exportDataStructure(e);
           } else if (value == "code") {
-            File file = File("${e.name}_${e.data.headnode.name}_generated.js");
-            final codeGen = TSCodeGenerator();
-            file.writeAsString(codeGen.generateCode(e.data.headnode));
-            File filec = File("${e.name}_${e.data.headnode.name}_generated.h");
-            filec.writeAsString(generateCCode(e.data.headnode));
+            if (widget.fileManager.isOpen) {
+              saveGeneratedCode(widget.fileManager.project.file.parent.path, e);
+            } else {
+              widget.fileManager.saveProject().then((value) => value == 0 ? saveGeneratedCode(widget.fileManager.project.file.parent.path, e) : 0);
+            }
           } else if (value == "delete") {
             deleteBoardCallback(context, e);
           }
@@ -261,6 +276,14 @@ class BoardSelectorState extends State<BoardSelector> {
         ),
       ),
     );
+  }
+
+  void saveGeneratedCode(String folder, BoardModel board) async {
+    File file = File("$folder\\${board.name}_${board.data.headnode.name}_generated.js");
+    final codeGen = TSCodeGenerator();
+    await file.writeAsString(codeGen.generateCode(board.data.headnode));
+    File filec = File("$folder\\${board.name}_${board.data.headnode.name}_generated.h");
+    await filec.writeAsString(generateCCode(board.data.headnode));
   }
 
   void selectBoard(BoardModel model) {

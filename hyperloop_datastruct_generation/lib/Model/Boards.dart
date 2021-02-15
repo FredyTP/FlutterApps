@@ -5,7 +5,7 @@ import 'package:hyperloop_datastruct_generation/Model/BoardModel.dart';
 class Boards {
   List<BoardModel> boardlist;
 
-  Boards({this.boardlist});
+  Boards({this.boardlist = const <BoardModel>[]});
 
   void add(BoardModel model) {
     boardlist.add(model);
@@ -28,6 +28,10 @@ class Boards {
   }
   void loadFromJson(String json) {
     final map = jsonDecode(json);
-    this.boardlist = map["boardlist"].map((e) => BoardModel.fromMap(e)).toList().cast<BoardModel>();
+    this.loadFromMap(map);
+  }
+
+  void loadFromMap(Map<String, dynamic> map) {
+    this.boardlist = map["boardlist"]?.map((e) => BoardModel.fromMap(e))?.toList()?.cast<BoardModel>();
   }
 }

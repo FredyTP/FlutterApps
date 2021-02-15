@@ -25,7 +25,7 @@ class DataStructEditorState extends State<DataStructEditor> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Color.fromRGBO(35, 35, 35, 1.0),
+      color: ColorData.bgColor,
       width: MediaQuery.of(context).size.width,
       height: MediaQuery.of(context).size.height,
       child: Column(
@@ -72,7 +72,7 @@ class DataStructEditorState extends State<DataStructEditor> {
 
   Container buildStructureInfoWidget() {
     return Container(
-      color: Color.fromRGBO(55, 55, 55, 1.0),
+      color: ColorData.bgColor,
       child: Column(
         children: [
           Row(
@@ -182,43 +182,45 @@ class DataStructEditorState extends State<DataStructEditor> {
         child: MouseRegion(
           cursor: SystemMouseCursors.click,
           child: roundedContainer(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                variable.isStruct()
-                    ? IconButton(
-                        icon: Icon(
-                          variable.hide ? Icons.arrow_forward_outlined : Icons.arrow_downward_outlined,
-                          color: ColorData.dropdownArrowColor,
-                        ),
-                        onPressed: () => setState(() => variable.hide = !variable.hide),
-                      )
-                    : SizedBox.shrink(),
-                roundedContainer(child: Text(variable.type.type, style: TextStyle(color: ColorData.nameFontColor)), color: ColorData.varTypeColor),
-                variable.isStruct() ? roundedContainer(child: Text(variable.structType, style: TextStyle(color: ColorData.nameFontColor)), color: ColorData.structTypeColor) : SizedBox.shrink(),
-                variable.isEnum() ? roundedContainer(child: Text(variable.enumName, style: TextStyle(color: ColorData.nameFontColor)), color: ColorData.structTypeColor) : SizedBox.shrink(),
-                roundedContainer(
-                    child: Text(
-                      variable.name,
-                    ),
-                    color: ColorData.varNameColor),
-                variable != widget.variableTree.headnode ? roundedContainer(child: Text("[${variable.arrayLen.toString()}]"), color: ColorData.lenColor) : SizedBox.shrink(),
-                variable.isStruct() && variable.hide == true
-                    ? Text(
-                        "${variable.children.length} items",
-                        style: TextStyle(color: ColorData.nameFontColor),
-                      )
-                    : SizedBox.shrink(),
-                SizedBox(width: 20),
-                variable != widget.variableTree.headnode
-                    ? IconButton(
-                        icon: Transform.rotate(angle: pi / 4, child: Icon(Icons.add_circle, color: Colors.red)),
-                        onPressed: () {
-                          deleteVariableCallback(context, variable);
-                        },
-                      )
-                    : SizedBox.shrink(),
-              ],
+            child: Container(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  variable.isStruct()
+                      ? IconButton(
+                          icon: Icon(
+                            variable.hide ? Icons.arrow_forward_outlined : Icons.arrow_downward_outlined,
+                            color: ColorData.dropdownArrowColor,
+                          ),
+                          onPressed: () => setState(() => variable.hide = !variable.hide),
+                        )
+                      : SizedBox.shrink(),
+                  roundedContainer(child: Text(variable.type.type, style: TextStyle(color: ColorData.nameFontColor)), color: ColorData.varTypeColor),
+                  variable.isStruct() ? roundedContainer(child: Text(variable.structType, style: TextStyle(color: ColorData.nameFontColor)), color: ColorData.structTypeColor) : SizedBox.shrink(),
+                  variable.isEnum() ? roundedContainer(child: Text(variable.enumName, style: TextStyle(color: ColorData.nameFontColor)), color: ColorData.structTypeColor) : SizedBox.shrink(),
+                  roundedContainer(
+                      child: Text(
+                        variable.name,
+                      ),
+                      color: ColorData.varNameColor),
+                  variable != widget.variableTree.headnode ? roundedContainer(child: Text("[${variable.arrayLen.toString()}]"), color: ColorData.lenColor) : SizedBox.shrink(),
+                  variable.isStruct() && variable.hide == true
+                      ? Text(
+                          "${variable.children.length} items",
+                          style: TextStyle(color: ColorData.nameFontColor),
+                        )
+                      : SizedBox.shrink(),
+                  SizedBox(width: 20),
+                  variable != widget.variableTree.headnode
+                      ? IconButton(
+                          icon: Transform.rotate(angle: pi / 4, child: Icon(Icons.add_circle, color: Colors.red)),
+                          onPressed: () {
+                            deleteVariableCallback(context, variable);
+                          },
+                        )
+                      : SizedBox.shrink(),
+                ],
+              ),
             ),
             color: ColorData.boxColor,
           ),
