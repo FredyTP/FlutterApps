@@ -6,6 +6,8 @@
 // of this license document, but changing it is not allowed.
 //Author: Alfredo Torres Pons
 
+import 'package:hyperloop_datastruct_generation/Model/BoardModel.dart';
+import 'package:hyperloop_datastruct_generation/Model/Boards.dart';
 import 'package:hyperloop_datastruct_generation/Model/VariableInfo.dart';
 import 'package:hyperloop_datastruct_generation/Model/variable.dart';
 
@@ -54,12 +56,17 @@ class TSCodeGenerator {
   List<VariableInfo> listedVariables;
   List<String> declaredMaps = [];
   int idx = 0;
+  final String moduleName;
+  final String globalClassName;
+
+  TSCodeGenerator({this.moduleName, this.globalClassName});
+
   String newMap(Variable vari) {
     if (declaredMaps.contains(vari.name)) {
-      return "\n${vari.name} = new Map()\n";
+      return "\n";
     } else {
       declaredMaps.add(vari.name);
-      return "\nlet ${vari.name} = new Map()\n";
+      return "\n\tconst ${vari.name}: $moduleName.${vari.structType} = <$moduleName.${vari.structType}>{};\n";
     }
   }
 
@@ -72,13 +79,14 @@ class TSCodeGenerator {
 
   String addMapFieldTo(Variable vari, Variable parent) {
     if (vari.isArray()) {
-      return '${parent.name}.set("${vari.name}",[])\n';
+      return '\t${parent.name}.${vari.name}=[];\n';
     } else {
       if (vari.isStruct()) {
-        final ret = '${parent.name}.set("${vari.name}",0)\n';
+        //final ret = '${parent.name}.set("${vari.name}",0)\n';
+        final ret = "";
         return ret;
       } else {
-        final ret = '${parent.name}.set("${vari.name}",data.${parseFunction(vari)})\n';
+        final ret = '\t${parent.name}.${vari.name}=data.${parseFunction(vari)};\n';
         idx++;
         return ret;
       }
@@ -88,15 +96,15 @@ class TSCodeGenerator {
   String setMapField(Variable vari, Variable parent) {
     if (vari.isArray()) {
       if (vari.isStruct()) {
-        return '${parent.name}.get("${vari.name}").push(${vari.name})\n';
+        return '\t${parent.name}.${vari.name}.push(${vari.name});\n';
       } else {
-        final ret = '${parent.name}.get("${vari.name}").push(data.${parseFunction(vari)})\n';
+        final ret = '\t${parent.name}.${vari.name}.push(data.${parseFunction(vari)});\n';
         idx++;
         return ret;
       }
     } else {
       if (vari.isStruct()) {
-        return '${parent.name}.set("${vari.name}",${vari.name})\n';
+        return '\t${parent.name}.${vari.name}=${vari.name};\n';
       }
 
       return "";
@@ -120,18 +128,66 @@ class TSCodeGenerator {
     return code;
   }
 
-  String generateCode(Variable headnode) {
+  String generateCode(BoardModel board) {
     //int bufferSize = Variable.countStructSizeRecursive(headnode.children, 0);
+    final headnode = board.data.headnode;
     listedVariables = recursiveGenList(headnode, []);
     print(listedVariables.length);
     for (int i = 1; i < listedVariables.length; i++) {
       listedVariables[i].index = listedVariables[i - 1].index + listedVariables[i - 1].vari.type.size;
     }
     String code = "";
-    code += "let array = new Uint8Array(-INSERTAR_ARRAY-);\n";
-    code += "let data=new DataView(array.buffer);\n";
-
+    code += "parse${board.name}(data): $moduleName.${headnode.structType}{\n";
     code += recursiveGenerateTScode(headnode);
+    code += "\n\treturn ${headnode.name};";
+    code += "\n}";
+    return code;
+  }
+
+//TS STRUCT CODE GENERATION (EASY)
+  String recursiveGenerateTSCodeStruct(List<Variable> varlist, Variable struct) {
+    String code = "";
+    for (Variable vari in varlist) {
+      if (vari.type.type == "struct") {
+        code += recursiveGenerateTSCodeStruct(vari.children, vari);
+      }
+    }
+    code += "\texport interface ${struct.structType} \n\t{";
+    for (Variable vari in varlist) {
+      code += "\n";
+      String varType = "number";
+      if (vari.isStruct()) {
+        varType = vari.structType;
+      }
+      if (vari.arrayLen > 1) {
+        varType = "$varType[]";
+      }
+      if (vari.isStruct()) {
+        code += ("\t\t" + vari.name + ": " + varType + ";");
+      } else if (vari.isEnum()) {
+        code += ("\t\tenum " + vari.enumName + " " + varType + ";"); //NOT OK CORRECT IF NECESARY
+      } else {
+        code += ("\t\t" + vari.name + ": " + varType + ";");
+      }
+    }
+    code += "\n\t}\n\n";
+    return code;
+  }
+
+  String generateTSCodeStruct(Boards boards) {
+    //String header = "#ifndef ${headnode.name.toUpperCase()}_GENERATED_H_\n#define ${headnode.name.toUpperCase()}_GENERATED_H_\n \n#pragma pack(1)\n \n#include<stdint.h> \n \n";
+    String code = "export declare module $moduleName \n{\n";
+    for (final board in boards.boardlist) {
+      code += recursiveGenerateTSCodeStruct(board.data.headnode.children, board.data.headnode);
+    }
+    code += "\n\texport interface $globalClassName \n\t{";
+    for (final BoardModel board in boards.boardlist) {
+      code += "\n\t\t${board.data.headnode.name}: ${board.data.headnode.structType};";
+    }
+    code += "\n\t}";
+
+    code += "\n}";
+
     return code;
   }
 }

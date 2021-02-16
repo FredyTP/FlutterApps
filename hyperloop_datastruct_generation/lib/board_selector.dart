@@ -208,8 +208,6 @@ class BoardSelectorState extends State<BoardSelector> {
         PopupMenuItem<String>(child: Text('Import Struct'), textStyle: textStyle, value: 'import'),
         PopupMenuItem<String>(child: Text('Export Struct'), textStyle: textStyle, value: 'export'),
         popupDivider,
-        PopupMenuItem<String>(child: Text('Generate Code'), textStyle: textStyle, value: 'code'),
-        popupDivider,
         PopupMenuItem<String>(child: Text('Delete Board'), textStyle: deleteTextStyle, value: 'delete'),
       ],
       elevation: 8.0,
@@ -279,11 +277,11 @@ class BoardSelectorState extends State<BoardSelector> {
   }
 
   void saveGeneratedCode(String folder, BoardModel board) async {
-    File file = File("$folder\\${board.name}_${board.data.headnode.name}_generated.js");
+    /*File file = File("$folder\\${board.name}_${board.data.headnode.name}_generated.js");
     final codeGen = TSCodeGenerator();
     await file.writeAsString(codeGen.generateCode(board.data.headnode));
     File filec = File("$folder\\${board.name}_${board.data.headnode.name}_generated.h");
-    await filec.writeAsString(generateCCode(board.data.headnode));
+    await filec.writeAsString(generateCCode(board.data.headnode));*/
   }
 
   void selectBoard(BoardModel model) {

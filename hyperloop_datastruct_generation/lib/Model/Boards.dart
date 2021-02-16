@@ -4,7 +4,8 @@ import 'package:hyperloop_datastruct_generation/Model/BoardModel.dart';
 
 class Boards {
   List<BoardModel> boardlist;
-
+  String structName = "";
+  String moduleName = "";
   Boards({this.boardlist = const <BoardModel>[]});
 
   void add(BoardModel model) {

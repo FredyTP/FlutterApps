@@ -16,7 +16,6 @@ import 'package:hyperloop_datastruct_generation/custom_popup_divider.dart';
 import 'package:hyperloop_datastruct_generation/data_struct_editor.dart';
 import 'package:hyperloop_datastruct_generation/file_manager.dart';
 
-import 'Model/Boards.dart';
 import 'board_selector.dart';
 import 'code/CodeGeneration.dart';
 
@@ -316,6 +315,70 @@ class _HomePageState extends State<HomePage> {
                     child: Column(
                       children: [
                         roundedBoxContainer(
+                          margin: EdgeInsets.all(10),
+                          child: TextFormField(
+                            style: TextStyle(color: ColorData.nameFontColor),
+                            decoration: InputDecoration(
+                                filled: true,
+                                fillColor: ColorData.boxColor,
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Color.fromRGBO(150, 156, 170, 1), width: 1),
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(10.0),
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: ColorData.nameFontColor, width: 1),
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(10.0),
+                                  ),
+                                ),
+                                labelText: "Global Class Name",
+                                hintStyle: TextStyle(color: ColorData.nameFontColor),
+                                labelStyle: TextStyle(color: ColorData.nameFontColor)),
+                            cursorColor: ColorData.nameFontColor,
+                            initialValue: project.globalClassName,
+                            onFieldSubmitted: (value) {},
+                            onChanged: (value) {
+                              setState(() {
+                                project.globalClassName = value;
+                              });
+                            },
+                          ),
+                        ),
+                        roundedBoxContainer(
+                          margin: EdgeInsets.all(10),
+                          child: TextFormField(
+                            style: TextStyle(color: ColorData.nameFontColor),
+                            decoration: InputDecoration(
+                                filled: true,
+                                fillColor: ColorData.boxColor,
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Color.fromRGBO(150, 156, 170, 1), width: 1),
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(10.0),
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: ColorData.nameFontColor, width: 1),
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(10.0),
+                                  ),
+                                ),
+                                labelText: "Module Name",
+                                hintStyle: TextStyle(color: ColorData.nameFontColor),
+                                labelStyle: TextStyle(color: ColorData.nameFontColor)),
+                            cursorColor: ColorData.nameFontColor,
+                            initialValue: project.moduleName,
+                            onFieldSubmitted: (value) {},
+                            onChanged: (value) {
+                              setState(() {
+                                project.moduleName = value;
+                              });
+                            },
+                          ),
+                        ),
+                        roundedBoxContainer(
                             child: SwitchListTile(
                               title: Text(
                                 "C/C++ Machine BigEndian",
@@ -343,6 +406,18 @@ class _HomePageState extends State<HomePage> {
                             child: SwitchListTile(
                               title: Text(
                                 "Is C++ Code?",
+                                style: textStyle,
+                              ),
+                              activeColor: ColorData.varTypeColor,
+                              value: true,
+                              onChanged: (_) {},
+                            ),
+                            color: ColorData.boxColor,
+                            margin: EdgeInsets.only(top: 10, left: 10, right: 10)),
+                        roundedBoxContainer(
+                            child: SwitchListTile(
+                              title: Text(
+                                "Autosave",
                                 style: textStyle,
                               ),
                               activeColor: ColorData.varTypeColor,
@@ -390,12 +465,16 @@ class _HomePageState extends State<HomePage> {
 
   Future saveGeneratedCode(String folder) async {
     for (final board in project.boards.boardlist) {
-      File file = File("$folder\\${board.name}_${board.data.headnode.name}_generated.js");
-      final codeGen = TSCodeGenerator();
-      await file.writeAsString(codeGen.generateCode(board.data.headnode));
+      File file = File("$folder\\parse${board.name}.ts");
+      final codeGen = TSCodeGenerator(moduleName: project.moduleName, globalClassName: project.globalClassName);
+      await file.writeAsString(codeGen.generateCode(board));
       File filec = File("$folder\\${board.name}_${board.data.headnode.name}_generated.h");
       await filec.writeAsString(generateCCode(board.data.headnode));
     }
+
+    File filetsd = File("$folder\\${project.moduleName}.d.ts");
+    final codeGen = TSCodeGenerator(moduleName: project.moduleName, globalClassName: project.globalClassName);
+    await filetsd.writeAsString(codeGen.generateTSCodeStruct(project.boards));
   }
 
   Future<int> saveProject() async {

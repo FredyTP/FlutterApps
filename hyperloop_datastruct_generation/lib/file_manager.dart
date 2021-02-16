@@ -38,6 +38,8 @@ class FileManager {
     }
     project.boards = temp.boards;
     project.file = file;
+    project.globalClassName = temp.globalClassName;
+    project.moduleName = temp.moduleName;
     return 0;
   }
 
@@ -58,6 +60,8 @@ class FileManager {
   void newProject() {
     project.boards = Boards(boardlist: [BoardModel(name: "MASTER")]);
     project.file = null;
+    project.moduleName = "PodDataModel";
+    project.globalClassName = "PodDataStructure";
   }
 
 //Saves actual project into its file, if new project save file as
@@ -77,7 +81,7 @@ class FileManager {
     if (file != null) {
       project.file = await _saveProjectData(file);
       onLoadData?.call();
-      return 1;
+      return 0;
     }
     return -1;
   }
