@@ -104,7 +104,7 @@ class DataStructEditorState extends State<DataStructEditor> {
     );
   }
 
-  Widget addNewVariableButton(List<Variable> varlist, BuildContext context) {
+  Widget addNewVariableButton(List<Variable> varlist) {
     return Container(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -118,51 +118,37 @@ class DataStructEditorState extends State<DataStructEditor> {
             },
             icon: Icon(Icons.add_circle, color: Color.fromRGBO(0, 0, 0, 1.0)),
           ),
-          GestureDetector(
-            onTapDown: (details) {
-              showDialog(
-                barrierColor: Colors.transparent,
-                context: context,
-                builder: (context) => StatefulBuilder(builder: (context, setState) {
-                  return Stack(children: [
-                    Positioned(
-                      left: details.globalPosition.dx,
-                      right: details.globalPosition.dy,
-                      child: Dialog(
-                        child: Container(
-                          color: Colors.white,
-                          width: 200,
-                          height: 200,
-                        ),
-                      ),
-                    )
-                  ]);
-                }),
-              );
-              /*items: widget.project.savedStructs
-                    .map((vari) => PopupMenuItem(
-                          child: ListTile(
-                            title: Text(vari.structType),
-                            trailing: IconButton(
-                              icon: Transform.rotate(angle: pi / 4, child: Icon(Icons.add_circle, color: Colors.red)),
-                              onPressed: () {
-                                widget.project.savedStructs.remove(vari);
-                                setState(() {});
-                              },
-                            ),
-                          ),
-                          value: vari,
-                        ))
-                    .toList(),*/
-              /*
-                editingVar = Variable.fromJson(value.toJson());
-                varlist.add(editingVar);*/
+          PopupMenuButton<Variable>(
+            enabled: widget.project.savedStructs.isNotEmpty,
+            onSelected: (value) {
+              editingVar = Variable.fromJson(value.toJson());
+              varlist.add(editingVar);
               setState(() {});
             },
-            child: Tooltip(
-              message: "Add Saved Struct",
-              child: Icon(Icons.library_add, color: Color.fromRGBO(0, 0, 0, 1.0)),
-            ),
+            itemBuilder: (context) => widget.project.savedStructs
+                .map((vari) => PopupMenuItem(
+                      child: ListTile(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        title: Text(
+                          vari.structType,
+                          style: TextStyle(color: ColorData.nameFontColor),
+                        ),
+                        tileColor: ColorData.structTypeColor,
+                        trailing: IconButton(
+                          icon: Transform.rotate(angle: pi / 4, child: Icon(Icons.add_circle, color: Colors.red)),
+                          onPressed: () {
+                            setState(() {
+                              widget.project.savedStructs.remove(vari);
+                            });
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ),
+                      value: vari,
+                    ))
+                .toList(),
+            tooltip: widget.project.savedStructs.isEmpty ? "No Saved Structs" : "Add Saved Struct",
+            icon: Icon(Icons.library_add, color: widget.project.savedStructs.isEmpty ? Colors.grey : Color.fromRGBO(0, 0, 0, 1.0)),
           )
         ],
       ),
@@ -240,7 +226,7 @@ class DataStructEditorState extends State<DataStructEditor> {
             child: createVariableWidget(context, element, depth + 1, variable),
           );
         }).toList()
-          ..add(addNewVariableButton(variable.children, context)),
+          ..add(addNewVariableButton(variable.children)),
       );
     }
     if (editingVar == variable) {
