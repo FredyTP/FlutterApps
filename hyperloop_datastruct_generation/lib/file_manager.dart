@@ -36,10 +36,7 @@ class FileManager {
     if (temp.boards.boardlist == null) {
       return -1; //Bad File Format
     }
-    project.boards = temp.boards;
-    project.file = file;
-    project.globalClassName = temp.globalClassName;
-    project.moduleName = temp.moduleName;
+    project.loadFromJson(temp.toJson());
     return 0;
   }
 

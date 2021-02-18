@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -9,7 +7,7 @@ import 'package:hyperloop_datastruct_generation/file_manager.dart';
 import 'package:reorderables/reorderables.dart';
 
 import 'Model/Boards.dart';
-import 'code/CodeGeneration.dart';
+
 import 'custom_popup_divider.dart';
 
 class BoardSelector extends StatefulWidget {

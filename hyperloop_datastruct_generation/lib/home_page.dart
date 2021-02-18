@@ -126,6 +126,7 @@ class _HomePageState extends State<HomePage> {
                         key: structEditorKey,
                         board: selectedBoard,
                         variableTree: selectedBoard?.data,
+                        project: this.project,
                       ),
                     ),
                   ],

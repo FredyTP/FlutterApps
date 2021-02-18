@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:hyperloop_datastruct_generation/Model/BoardModel.dart';
+import 'package:hyperloop_datastruct_generation/Model/project_model.dart';
 import 'package:hyperloop_datastruct_generation/Model/variable_tree.dart';
 import 'package:hyperloop_datastruct_generation/color_data.dart';
 
@@ -12,7 +13,8 @@ import 'Model/variable.dart';
 class DataStructEditor extends StatefulWidget {
   final BoardModel board;
   final VariableTree variableTree;
-  DataStructEditor({Key key, this.variableTree, this.board}) : super(key: key);
+  final ProjectModel project;
+  DataStructEditor({Key key, this.variableTree, this.board, this.project}) : super(key: key);
 
   @override
   DataStructEditorState createState() => DataStructEditorState();
@@ -102,15 +104,92 @@ class DataStructEditorState extends State<DataStructEditor> {
     );
   }
 
-  Widget addNewVariableButton(List<Variable> varlist) {
-    return FlatButton.icon(
-        onPressed: () {
-          editingVar = Variable(name: "", type: lastDataType, children: List<Variable>.empty(growable: true));
-          varlist.add(editingVar);
-          setState(() {});
-        },
-        icon: Icon(Icons.add_circle, color: Color.fromRGBO(0, 0, 0, 1.0)),
-        label: Text(""));
+  Widget addNewVariableButton(List<Variable> varlist, BuildContext context) {
+    return Container(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconButton(
+            tooltip: "Add New Variable",
+            onPressed: () {
+              editingVar = Variable(name: "", type: lastDataType, children: List<Variable>.empty(growable: true));
+              varlist.add(editingVar);
+              setState(() {});
+            },
+            icon: Icon(Icons.add_circle, color: Color.fromRGBO(0, 0, 0, 1.0)),
+          ),
+          GestureDetector(
+            onTapDown: (details) {
+              showDialog(
+                barrierColor: Colors.transparent,
+                context: context,
+                builder: (context) => StatefulBuilder(builder: (context, setState) {
+                  return Stack(children: [
+                    Positioned(
+                      left: details.globalPosition.dx,
+                      right: details.globalPosition.dy,
+                      child: Dialog(
+                        child: Container(
+                          color: Colors.white,
+                          width: 200,
+                          height: 200,
+                        ),
+                      ),
+                    )
+                  ]);
+                }),
+              );
+              /*items: widget.project.savedStructs
+                    .map((vari) => PopupMenuItem(
+                          child: ListTile(
+                            title: Text(vari.structType),
+                            trailing: IconButton(
+                              icon: Transform.rotate(angle: pi / 4, child: Icon(Icons.add_circle, color: Colors.red)),
+                              onPressed: () {
+                                widget.project.savedStructs.remove(vari);
+                                setState(() {});
+                              },
+                            ),
+                          ),
+                          value: vari,
+                        ))
+                    .toList(),*/
+              /*
+                editingVar = Variable.fromJson(value.toJson());
+                varlist.add(editingVar);*/
+              setState(() {});
+            },
+            child: Tooltip(
+              message: "Add Saved Struct",
+              child: Icon(Icons.library_add, color: Color.fromRGBO(0, 0, 0, 1.0)),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget saveStructureTypeButton(Variable struct) {
+    if (!struct.isStruct() || struct == widget.variableTree.headnode) {
+      return SizedBox.shrink();
+    }
+    final isAlready = widget.project.savedStructs.any((element) => element.structType == struct.structType);
+    print(isAlready);
+
+    return IconButton(
+      onPressed: isAlready
+          ? null
+          : () {
+              final variable = Variable.fromJson(struct.toJson());
+              variable.name = "";
+              variable.arrayLen = 1;
+              widget.project.savedStructs.add(variable);
+              setState(() {});
+            },
+      color: Colors.green,
+      disabledColor: Colors.grey,
+      icon: Icon(Icons.save),
+    );
   }
 
   Widget variableEditField({Variable variable, void Function(String) onChanged, Color color, String initialText, String labelText, bool light = false, bool autofocus = false}) {
@@ -161,7 +240,7 @@ class DataStructEditorState extends State<DataStructEditor> {
             child: createVariableWidget(context, element, depth + 1, variable),
           );
         }).toList()
-          ..add(addNewVariableButton(variable.children)),
+          ..add(addNewVariableButton(variable.children, context)),
       );
     }
     if (editingVar == variable) {
@@ -204,6 +283,7 @@ class DataStructEditorState extends State<DataStructEditor> {
                       ),
                       color: ColorData.varNameColor),
                   variable != widget.variableTree.headnode ? roundedContainer(child: Text("[${variable.arrayLen.toString()}]"), color: ColorData.lenColor) : SizedBox.shrink(),
+                  saveStructureTypeButton(variable),
                   variable.isStruct() && variable.hide == true
                       ? Text(
                           "${variable.children.length} items",
