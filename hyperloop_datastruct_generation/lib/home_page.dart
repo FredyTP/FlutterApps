@@ -466,7 +466,7 @@ class _HomePageState extends State<HomePage> {
 
   Future saveGeneratedCode(String folder) async {
     for (final board in project.boards.boardlist) {
-      File file = File("$folder\\parse${board.name}.ts");
+      File file = File("$folder\\parse${board.name}.service.ts");
       final codeGen = TSCodeGenerator(moduleName: project.moduleName, globalClassName: project.globalClassName);
       await file.writeAsString(codeGen.generateCode(board));
       File filec = File("$folder\\${board.name}_${board.data.headnode.name}_generated.h");

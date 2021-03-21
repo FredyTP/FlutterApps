@@ -6,6 +6,7 @@ import 'package:hyperloop_datastruct_generation/Model/BoardModel.dart';
 import 'package:hyperloop_datastruct_generation/Model/project_model.dart';
 import 'package:hyperloop_datastruct_generation/Model/variable_tree.dart';
 import 'package:hyperloop_datastruct_generation/color_data.dart';
+import 'package:hyperloop_datastruct_generation/custom_popup_divider.dart';
 
 import 'Model/DataType.dart';
 import 'Model/variable.dart';
@@ -23,6 +24,10 @@ class DataStructEditor extends StatefulWidget {
 class DataStructEditorState extends State<DataStructEditor> {
   Variable editingVar;
   DataType lastDataType = DataType.float();
+  ScrollController scrollController = ScrollController(keepScrollOffset: false);
+  double scrollspace = 0.0;
+  double marginspace = 0.0;
+  bool firstTime = true;
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +44,7 @@ class DataStructEditorState extends State<DataStructEditor> {
                 buildStructureInfoWidget(),
                 Expanded(
                   child: Container(
+                    margin: EdgeInsets.only(right: 5.0),
                     decoration: BoxDecoration(
                       image: DecorationImage(
                         image: AssetImage("assets/img/Logo_Hyperloop_UPV-07.png"),
@@ -46,8 +52,19 @@ class DataStructEditorState extends State<DataStructEditor> {
                         scale: 0.2,
                       ),
                     ),
-                    child: ListView(
-                      children: generateWidgetTree(context, widget.variableTree.varlist),
+                    child: RawScrollbar(
+                      isAlwaysShown: true,
+                      thickness: 12.0,
+                      controller: scrollController,
+                      thumbColor: ColorData.varNameColor,
+                      radius: Radius.circular(8),
+                      child: Container(
+                        padding: EdgeInsets.only(right: 10.0),
+                        child: ListView(
+                          controller: scrollController,
+                          children: generateWidgetTree(context, widget.variableTree.varlist),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -119,34 +136,58 @@ class DataStructEditorState extends State<DataStructEditor> {
             icon: Icon(Icons.add_circle, color: Color.fromRGBO(0, 0, 0, 1.0)),
           ),
           PopupMenuButton<Variable>(
+            color: ColorData.bgColor,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             enabled: widget.project.savedStructs.isNotEmpty,
+            elevation: 10,
             onSelected: (value) {
               editingVar = Variable.fromJson(value.toJson());
               varlist.add(editingVar);
               setState(() {});
             },
-            itemBuilder: (context) => widget.project.savedStructs
+            itemBuilder: (context) => [
+              PopUpMenuChild(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(6.0),
+                    child: Text(
+                      "Saved Structs",
+                      style: TextStyle(color: ColorData.nameFontColor, fontSize: 16),
+                    ),
+                  ),
+                ),
+              ),
+              PopUpMenuChild(
+                child: Divider(
+                  color: ColorData.nameFontColor,
+                  thickness: 0,
+                  indent: 10,
+                  endIndent: 10,
+                ),
+              )
+            ]..addAll(widget.project.savedStructs
                 .map((vari) => PopupMenuItem(
-                      child: ListTile(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        title: Text(
-                          vari.structType,
-                          style: TextStyle(color: ColorData.nameFontColor),
-                        ),
-                        tileColor: ColorData.structTypeColor,
-                        trailing: IconButton(
-                          icon: Transform.rotate(angle: pi / 4, child: Icon(Icons.add_circle, color: Colors.red)),
-                          onPressed: () {
-                            setState(() {
-                              widget.project.savedStructs.remove(vari);
-                            });
-                            Navigator.of(context).pop();
-                          },
-                        ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            vari.structType,
+                            style: TextStyle(color: ColorData.nameFontColor),
+                          ),
+                          IconButton(
+                            icon: Transform.rotate(angle: pi / 4, child: Icon(Icons.add_circle, color: Colors.red)),
+                            onPressed: () {
+                              setState(() {
+                                widget.project.savedStructs.remove(vari);
+                              });
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        ],
                       ),
                       value: vari,
                     ))
-                .toList(),
+                .toList()),
             tooltip: widget.project.savedStructs.isEmpty ? "No Saved Structs" : "Add Saved Struct",
             icon: Icon(Icons.library_add, color: widget.project.savedStructs.isEmpty ? Colors.grey : Color.fromRGBO(0, 0, 0, 1.0)),
           )

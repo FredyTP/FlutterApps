@@ -63,10 +63,10 @@ class TSCodeGenerator {
 
   String newMap(Variable vari) {
     if (declaredMaps.contains(vari.name)) {
-      return "\n";
+      return "\n\t${vari.name} = {} as $moduleName.${vari.structType};\n";
     } else {
       declaredMaps.add(vari.name);
-      return "\n\tconst ${vari.name}: $moduleName.${vari.structType} = <$moduleName.${vari.structType}>{};\n";
+      return "\n\tlet ${vari.name}: $moduleName.${vari.structType} ={} as $moduleName.${vari.structType};\n";
     }
   }
 

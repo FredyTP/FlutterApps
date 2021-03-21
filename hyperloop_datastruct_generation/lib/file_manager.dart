@@ -37,6 +37,7 @@ class FileManager {
       return -1; //Bad File Format
     }
     project.loadFromJson(temp.toJson());
+    project.file = file;
     return 0;
   }
 
