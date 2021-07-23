@@ -116,7 +116,7 @@ class _HomePageState extends State<HomePage> {
                       color: ColorData.bgColor,
                       child: Center(
                         child: Text(
-                          fileManager.isOpen ? "Current Project: ${project.file.path}" : "No project Open",
+                          fileManager.isOpen ? "Current Project: ${project.file}" : "No project Open",
                           style: TextStyle(color: ColorData.nameFontColor),
                         ),
                       ),
@@ -190,7 +190,7 @@ class _HomePageState extends State<HomePage> {
               if (value == null) {
                 return;
               } else if (value == true) {
-                saveProject().then((value) => fileManager.isOpen ? newProject() : 0);
+                saveProject(context).then((value) => fileManager.isOpen ? newProject() : 0);
               } else {
                 newProject();
               }
@@ -198,9 +198,9 @@ class _HomePageState extends State<HomePage> {
           } else if (value == "Open Project") {
             openProject();
           } else if (value == "Save Project") {
-            saveProject();
+            saveProject(context);
           } else if (value == "Save Project As") {
-            saveProjectAs();
+            saveProjectAs(context);
           }
         },
         child: Center(child: Text("FILE", style: textStyle)),
@@ -281,7 +281,7 @@ class _HomePageState extends State<HomePage> {
         },
       ),
       divider,
-      FlatButton(onPressed: saveCode, child: Text("GENERATE CODE", style: textStyle)),
+      FlatButton(onPressed: () => saveCode(context), child: Text("GENERATE CODE", style: textStyle)),
     ];
   }
 
@@ -456,36 +456,36 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Future saveCode() async {
+  Future saveCode(BuildContext context) async {
     if (fileManager.isOpen) {
-      return await saveGeneratedCode(project.file.parent.path);
+      return await saveGeneratedCode(project.file);
     } else {
-      return await saveProject().then((value) => value == 0 ? saveGeneratedCode(project.file.parent.path) : 0);
+      return await saveProject(context).then((value) => value == 0 ? saveGeneratedCode(project.file) : 0);
     }
   }
 
   Future saveGeneratedCode(String folder) async {
     for (final board in project.boards.boardlist) {
-      File file = File("$folder\\parse${board.name}.service.ts");
+      String file = "parse${board.name}.service.ts";
       final codeGen = TSCodeGenerator(moduleName: project.moduleName, globalClassName: project.globalClassName);
-      await file.writeAsString(codeGen.generateCode(board));
-      File filec = File("$folder\\${board.name}_${board.data.headnode.name}_generated.h");
-      await filec.writeAsString(generateCCode(board.data.headnode));
+      await fileManager.saveFileHTML(file, codeGen.generateCode(board));
+      String filec = "${board.name}_${board.data.headnode.name}_generated.h";
+      await fileManager.saveFileHTML(filec, generateCCode(board.data.headnode));
     }
 
-    File filetsd = File("$folder\\${project.moduleName}.d.ts");
+    String filetsd = "${project.moduleName}.d.ts";
     final codeGen = TSCodeGenerator(moduleName: project.moduleName, globalClassName: project.globalClassName);
-    await filetsd.writeAsString(codeGen.generateTSCodeStruct(project.boards));
+    await fileManager.saveFileHTML(filetsd, codeGen.generateTSCodeStruct(project.boards));
   }
 
-  Future<int> saveProject() async {
-    final result = await fileManager.saveProject();
+  Future<int> saveProject(BuildContext context) async {
+    final result = await fileManager.saveProject(context);
     setState(() {});
     return result;
   }
 
-  void saveProjectAs() async {
-    await fileManager.saveProjectAs();
+  void saveProjectAs(BuildContext context) async {
+    await fileManager.saveProjectAs(context);
     setState(() {});
   }
 

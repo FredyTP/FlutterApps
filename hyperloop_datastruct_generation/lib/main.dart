@@ -11,12 +11,12 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hyperloop_datastruct_generation/home_page.dart';
 
-import 'package:win32/win32.dart';
+//import 'package:win32/win32.dart';
 
 void main() {
-  int window = GetForegroundWindow();
-  SetWindowText(window, TEXT("HYPERLOOP-UPV DATA STRUCT GENERATOR - by Alfredo Torres"));
-
+  //int window = GetForegroundWindow();
+  //SetWindowText(window, TEXT("HYPERLOOP-UPV DATA STRUCT GENERATOR - by Alfredo Torres"));
+//
   runApp(MyApp());
 }
 
@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
         // Notice that the counter didn't reset back to zero; the application
         // is not restarted.
         primaryColorDark: Color.fromRGBO(55, 55, 55, 1.0),
-        platform: TargetPlatform.windows,
+        //platform: TargetPlatform.windows,
         fontFamily: GoogleFonts.robotoSlab().fontFamily,
         appBarTheme: AppBarTheme(color: Color.fromRGBO(35, 35, 35, 1.0), centerTitle: false, systemOverlayStyle: SystemUiOverlayStyle.dark),
       ),

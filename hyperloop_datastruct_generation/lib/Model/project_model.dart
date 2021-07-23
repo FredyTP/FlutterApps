@@ -5,7 +5,7 @@ import 'package:hyperloop_datastruct_generation/Model/Boards.dart';
 import 'package:hyperloop_datastruct_generation/Model/variable.dart';
 
 class ProjectModel {
-  File file;
+  String file;
   Boards boards;
   String moduleName;
   String globalClassName;

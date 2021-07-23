@@ -250,9 +250,31 @@ class BoardSelectorState extends State<BoardSelector> {
             widget.fileManager.exportDataStructure(e);
           } else if (value == "code") {
             if (widget.fileManager.isOpen) {
-              saveGeneratedCode(widget.fileManager.project.file.parent.path, e);
+              saveGeneratedCode(widget.fileManager.project.file, e);
             } else {
-              widget.fileManager.saveProject().then((value) => value == 0 ? saveGeneratedCode(widget.fileManager.project.file.parent.path, e) : 0);
+              widget.fileManager.saveProject(context).then((value) => value == 0 ? saveGeneratedCode(widget.fileManager.project.file, e) : 0);
+            }
+          } else if (value == "delete") {
+            deleteBoardCallback(context, e);
+          }
+        });
+      },
+      onHorizontalDragUpdate: (DragUpdateDetails details) {
+        _showPopupMenu(context, details.globalPosition, e).then((value) {
+          if (value == "name") {
+            setState(() {
+              editTextBoard = e;
+              initialName = e.name;
+            });
+          } else if (value == "import") {
+            widget.fileManager.importDataStructure(e).then((value) => setState(() {}));
+          } else if (value == "export") {
+            widget.fileManager.exportDataStructure(e);
+          } else if (value == "code") {
+            if (widget.fileManager.isOpen) {
+              saveGeneratedCode(widget.fileManager.project.file, e);
+            } else {
+              widget.fileManager.saveProject(context).then((value) => value == 0 ? saveGeneratedCode(widget.fileManager.project.file, e) : 0);
             }
           } else if (value == "delete") {
             deleteBoardCallback(context, e);
